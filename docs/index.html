@@ -78,6 +78,10 @@ article .katex-display{overflow-x:auto;overflow-y:hidden;padding:4px 0}
 .stat{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:8px}
 .stat div{font-size:13px;color:var(--muted)}.stat b{display:block;font-size:22px;color:var(--text)}
 input[type=range]{vertical-align:middle}
+.pbar{display:flex;height:18px;border-radius:4px;overflow:hidden;min-width:200px;background:var(--surface-2)}
+.pbar span{display:block;height:100%}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px;vertical-align:middle}
+tr.past td{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -122,6 +126,13 @@ input[type=range]{vertical-align:middle}
     <h2>Cục Dự trữ Liên bang Mỹ (Fed) & cung tiền M2</h2>
     <p class="sub">Lãi suất của Fed là "lãi suất của thế giới": mọi ngân hàng trung ương ở trang này đều phải để mắt tới nó. <a href="#thu-vien/lich-su-fed">Đọc lịch sử các chu kỳ của Fed →</a></p>
     <div class="stat card" id="fStat"></div>
+    <div class="card tbl">
+      <h3>Lịch họp FOMC & kỳ vọng của thị trường</h3>
+      <p class="note">Xác suất từ thị trường dự đoán <a href="https://kalshi.com/markets/kxfeddecision" target="_blank" rel="noopener">Kalshi</a>, chuẩn hóa về 100%.
+        <span class="legend-dot" style="background:var(--cold)"></span>Giảm<span class="legend-dot" style="background:var(--border)"></span>Giữ nguyên<span class="legend-dot" style="background:var(--hot)"></span>Tăng.
+        ★ = có công bố dự phóng kinh tế & "dot plot". "Lãi suất kỳ vọng" = cận trên hiện tại cộng dồn mức thay đổi kỳ vọng của từng cuộc họp (ước lượng thô).</p>
+      <table id="fCal"></table>
+    </div>
     <div class="card">
       <h3>Lãi suất mục tiêu của Fed</h3><p class="note">Cận trên của biên độ mục tiêu, cuối mỗi tháng. Chấm <span class="hot">đỏ</span> = tăng, <span class="cold">xanh</span> = giảm.</p>
       <div class="controls" id="fRange"></div>
@@ -132,6 +143,7 @@ input[type=range]{vertical-align:middle}
       <div class="card"><h3>Cung tiền M2</h3><p class="note">Nghìn tỷ USD (cột trái) và tăng trưởng so với cùng kỳ (cột phải)</p><div class="chart"><canvas id="fch2"></canvas></div></div>
       <div class="card"><h3>M2 có dự báo được lạm phát?</h3><p class="note">Tăng trưởng M2 được dời tới trước <select id="fLag"><option value="0">0</option><option value="6">6</option><option value="12">12</option><option value="18" selected>18</option><option value="24">24</option></select> tháng, so với lạm phát CPI. <span id="fCorr"></span></p><div class="chart"><canvas id="fch3"></canvas></div></div>
     </div>
+    <div class="card"><h3>Bảng cân đối kế toán của Fed (QE / QT)</h3><p class="note">Tổng tài sản, nghìn tỷ USD, hằng tuần. Tăng = Fed in tiền mua tài sản (QE); giảm = rút tiền về (QT). <a href="#thu-vien/bang-can-doi-fed">Đọc thêm →</a></p><div class="chart" style="height:320px"><canvas id="fch4"></canvas></div></div>
     <div class="card tbl"><h3>Các lần điều chỉnh gần nhất</h3><table id="fMoves"></table></div>
   </section>
 
@@ -333,12 +345,15 @@ function renderFed() {
   const F = D.fed, us = D.countries.US.series;
   if (!F) { $("#fStat").textContent = "Chưa có dữ liệu Fed."; return; }
   const lastMove = F.moves[F.moves.length - 1], cur = F.cycles[F.cycles.length - 1];
+  const today = new Date().toISOString().slice(0, 10);
+  const nextMtg = (F.calendar || []).find(m => m.date >= today);
   const m2 = last(us.m2), m2y = last(us.m2_yoy), pce = last(us.core_pce), cpi = last(us.cpi);
   $("#fStat").innerHTML = [
     ["Biên độ mục tiêu hiện tại", `${f1(F.now.lower)}–${f1(F.now.upper)}%`],
     ["Lần điều chỉnh gần nhất", `${bpsTxt(lastMove.bps)} bps<span class="d">${vnDate(lastMove.date)}</span>`],
     ["Chu kỳ hiện tại", `${cur.dir === "up" ? "Tăng" : "Giảm"} ${cur.moves} lần<span class="d">từ ${vnDate(cur.start)}, tổng ${cur.bps > 0 ? "+" : ""}${cur.bps} bps</span>`],
     ["Lạm phát CPI / PCE lõi", `${f1(cpi[1])}% / ${f1(pce[1])}%<span class="d">${pce[0]} — mục tiêu Fed: PCE 2%</span>`],
+    ...(nextMtg ? [["Họp FOMC tiếp theo", `${vnDate(nextMtg.date)}<span class="d">còn ${daysTo(nextMtg.date)} ngày${nextMtg.sep ? " · có dot plot" : ""}</span>`]] : []),
     ["Cung tiền M2", `${m2[1].toFixed(2)} nghìn tỷ $<span class="d">${m2[0]}, ${sign(m2y[1])}% so với cùng kỳ</span>`],
   ].map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join("");
 
@@ -363,6 +378,13 @@ function renderFed() {
   $("#fMoves").innerHTML = `<thead><tr><th>Ngày</th><th>Thay đổi (bps)</th><th>Biên độ mới</th></tr></thead><tbody>` +
     [...F.moves].reverse().slice(0, 15).map(m => `<tr><td>${vnDate(m.date)}</td><td>${bpsTxt(m.bps)}</td><td>${m.lower === m.upper ? f1(m.upper) : f1(m.lower) + "–" + f1(m.upper)}%</td></tr>`).join("") + "</tbody>";
 
+  renderFomc(F, today);
+  if (F.balance) {
+    const LB = F.balance.map(x => x[0]).filter(d => d >= `${new Date().getFullYear() - Math.min(FED_YEARS, 19)}`);
+    draw("fch4", {type: "line", data: {labels: LB, datasets: [line("Tổng tài sản (nghìn tỷ $)", F.balance, LB, css("--s4"), {fill: true, backgroundColor: css("--s4") + "22"})]},
+      options: {scales: {x: {ticks: {maxTicksLimit: 8, maxRotation: 0, callback: function (v) { return this.getLabelForValue(v).slice(0, 7); }}, grid: {display: false}}, y: {ticks: {callback: v => v + "T"}}}}});
+  }
+
   // M2
   const LM = monthsFrom(ymShift(last(us.m2)[0], -12 * Math.min(FED_YEARS, 26) + 1), last(us.m2)[0]);
   draw("fch2", {type: "bar", data: {labels: LM, datasets: [
@@ -380,6 +402,31 @@ function renderFed() {
     line("Lạm phát CPI y/y", us.cpi, LC, css("--s2")),
   ]}});
 }
+const daysTo = d => Math.ceil((new Date(d) - new Date()) / 864e5);
+function renderFomc(F, today) {
+  const cal = F.calendar || [], mk = new Map((F.market || []).map(m => [m.date, m.probs]));
+  const year = today.slice(0, 4);
+  // Kết quả của các cuộc họp đã qua trong năm: lần điều chỉnh trong vòng 2 ngày sau cuộc họp
+  const result = m => { const mv = F.moves.find(x => x.date >= m.start && x.date <= ymdAdd(m.date, 2)); return mv ? bpsTxt(mv.bps) + " bps" : "Giữ nguyên"; };
+  let cum = 0;
+  const rows = cal.filter(m => m.date.slice(0, 4) >= year).map(m => {
+    const label = `${vnDate(m.date)}${m.sep ? " ★" : ""}`;
+    if (m.date < today) return `<tr class="past"><td>${label}</td><td colspan="2">Đã họp</td><td>${result(m)}</td><td></td></tr>`;
+    const p = mk.get(m.date);
+    if (!p) return `<tr><td>${label}</td><td colspan="4" class="d">Chưa có dữ liệu thị trường</td></tr>`;
+    const down = (p["-50"] || 0) + (p["-25"] || 0), hold = p["0"] || 0, up = (p["25"] || 0) + (p["50"] || 0);
+    cum += Object.entries(p).reduce((a, [k, v]) => a + k * v, 0);
+    const [topK, topV] = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
+    const name = {"-50": "Giảm >25 bps", "-25": "Giảm 25 bps", "0": "Giữ nguyên", "25": "Tăng 25 bps", "50": "Tăng >25 bps"}[topK];
+    const pct = v => Math.round(v * 100) + "%";
+    return `<tr><td><b>${label}</b><span class="d">còn ${daysTo(m.date)} ngày</span></td>
+      <td><div class="pbar" title="Giảm ${pct(down)} · Giữ ${pct(hold)} · Tăng ${pct(up)}"><span style="width:${down * 100}%;background:var(--cold)"></span><span style="width:${hold * 100}%;background:var(--border)"></span><span style="width:${up * 100}%;background:var(--hot)"></span></div>
+        <span class="d">Giảm ${pct(down)} · Giữ ${pct(hold)} · Tăng ${pct(up)}</span></td>
+      <td>${name}<span class="d">${pct(topV)}</span></td><td>${cum >= 0 ? "+" : ""}${Math.round(cum)} bps<span class="d">mức thay đổi kỳ vọng tích lũy</span></td><td><b>${f1(F.now.upper + cum / 100)}%</b></td></tr>`;
+  });
+  $("#fCal").innerHTML = `<thead><tr><th>Cuộc họp</th><th>Xác suất</th><th>Khả năng cao nhất</th><th>Kết quả / kỳ vọng</th><th>Lãi suất kỳ vọng</th></tr></thead><tbody>${rows.join("")}</tbody>`;
+}
+const ymdAdd = (d, n) => { const t = new Date(d); t.setDate(t.getDate() + n); return t.toISOString().slice(0, 10); };
 $("#fLag") && ($("#fLag").onchange = () => renderFed());
 
 // ---------- library ----------

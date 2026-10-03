@@ -8,7 +8,7 @@ Nguồn:
   World Bank– tăng trưởng GDP, lạm phát theo năm (dùng cho Việt Nam và để bổ sung)
 Mỗi chuỗi lỗi riêng sẽ bị bỏ qua, không làm hỏng cả file.
 """
-import csv, io, json, datetime, urllib.request
+import csv, io, json, re, datetime, urllib.request
 from pathlib import Path
 
 START = "2000-01"
@@ -108,6 +108,53 @@ def fed_cycles(moves, since="1988-01-01"):
     return cycles
 
 
+MONTHS = {m: i for i, m in enumerate(["January", "February", "March", "April", "May", "June", "July",
+                                       "August", "September", "October", "November", "December"], 1)}
+MONTHS.update({m[:3]: i for m, i in list(MONTHS.items())})
+
+
+def fomc_calendar():
+    """Lịch họp FOMC từ trang Fed. Dấu * = họp có công bố dự phóng kinh tế (SEP, 'dot plot')."""
+    html = get("https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm")
+    out = []
+    for block in re.split(r'<h4><a id="\d+">', html)[1:]:
+        year = int(block[:4])
+        if year < datetime.date.today().year - 1:
+            continue
+        for month, days in re.findall(r'fomc-meeting__month[^>]*><strong>([^<]+)</strong>.*?fomc-meeting__date[^>]*>([^<]+)<', block, re.S):
+            if "notation" in days or "unscheduled" in days.lower():
+                continue
+            months = [MONTHS[m] for m in month.split("/")]
+            nums = [int(x) for x in re.findall(r"\d+", days)]
+            start = datetime.date(year, months[0], nums[0])
+            end = datetime.date(year, months[-1], nums[-1])
+            out.append({"start": start.isoformat(), "date": end.isoformat(), "sep": "*" in days})
+    return sorted(out, key=lambda m: m["date"])
+
+
+KALSHI_CHANGE = {"C26": -50, "C25": -25, "H0": 0, "H25": 25, "H26": 50}
+
+
+def kalshi_fed():
+    """Xác suất thị trường cho từng cuộc họp FOMC sắp tới (thị trường dự đoán Kalshi)."""
+    d = json.loads(get("https://api.elections.kalshi.com/trade-api/v2/events?series_ticker=KXFEDDECISION&status=open&with_nested_markets=true"))
+    out = []
+    for e in d["events"]:
+        probs = {}
+        for m in e["markets"]:
+            key = m["ticker"].rsplit("-", 1)[-1]
+            if key not in KALSHI_CHANGE:
+                continue
+            bid, ask, lastp = (float(m.get(k) or 0) for k in ("yes_bid_dollars", "yes_ask_dollars", "last_price_dollars"))
+            # Chênh lệch mua/bán hẹp -> dùng giá giữa; rộng (ít giao dịch) -> dùng giá khớp gần nhất
+            probs[KALSHI_CHANGE[key]] = (bid + ask) / 2 if ask - bid <= 0.1 else lastp
+        total = sum(probs.values())
+        if total:
+            out.append({"date": e["strike_date"][:10],
+                        "probs": {str(k): round(v / total, 3) for k, v in sorted(probs.items())}})
+    return sorted(out, key=lambda m: m["date"])
+
+
 def us_data():
     s = {}
     s["rate"] = safe("US fedfunds", fred, "FEDFUNDS")
@@ -132,6 +179,10 @@ def us_data():
     if r:
         moves, now, monthly = r
         fed = {"now": now, "moves": moves[-40:], "cycles": fed_cycles(moves), "target_monthly": monthly}
+        fed["calendar"] = safe("FOMC calendar", fomc_calendar)
+        fed["market"] = safe("Kalshi", kalshi_fed)
+        walcl = safe("WALCL", fred_raw, "WALCL")   # tổng tài sản của Fed, triệu USD, hằng tuần
+        fed["balance"] = [[d, round(v / 1e6, 3)] for d, v in walcl if d >= "2007-01-01"] if walcl else None
     return s, fed
 
 
