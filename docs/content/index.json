@@ -1,11 +1,63 @@
 [
-  {"id": "truong-phai", "title": "Các trường phái kinh tế học", "group": "Nền tảng"},
-  {"id": "chu-ky-kinh-te", "title": "Chu kỳ kinh tế & GDP", "group": "Nền tảng"},
-  {"id": "lam-phat", "title": "Lạm phát & CPI", "group": "Nền tảng"},
-  {"id": "chinh-sach-tien-te", "title": "Chính sách tiền tệ & lãi suất điều hành", "group": "Tiền tệ"},
-  {"id": "lai-suat-thuc", "title": "Lãi suất thực & phương trình Fisher", "group": "Tiền tệ", "lab": "real"},
-  {"id": "quy-tac-taylor", "title": "Quy tắc Taylor", "group": "Tiền tệ", "lab": "taylor"},
-  {"id": "duong-cong-phillips", "title": "Đường cong Phillips", "group": "Thị trường lao động", "lab": "phillips"},
-  {"id": "duong-cong-loi-suat", "title": "Đường cong lợi suất", "group": "Thị trường tài chính", "lab": "term"},
-  {"id": "bo-ba-bat-kha-thi", "title": "Bộ ba bất khả thi", "group": "Kinh tế quốc tế"}
+  {
+    "id": "truong-phai",
+    "title": "Các trường phái kinh tế học",
+    "group": "Nền tảng"
+  },
+  {
+    "id": "chu-ky-kinh-te",
+    "title": "Chu kỳ kinh tế & GDP",
+    "group": "Nền tảng"
+  },
+  {
+    "id": "lam-phat",
+    "title": "Lạm phát & CPI",
+    "group": "Nền tảng"
+  },
+  {
+    "id": "chinh-sach-tien-te",
+    "title": "Chính sách tiền tệ & lãi suất điều hành",
+    "group": "Tiền tệ"
+  },
+  {
+    "id": "lai-suat-thuc",
+    "title": "Lãi suất thực & phương trình Fisher",
+    "group": "Tiền tệ",
+    "lab": "real"
+  },
+  {
+    "id": "quy-tac-taylor",
+    "title": "Quy tắc Taylor",
+    "group": "Tiền tệ",
+    "lab": "taylor"
+  },
+  {
+    "id": "lich-su-fed",
+    "title": "Fed & lịch sử các chu kỳ lãi suất",
+    "group": "Tiền tệ",
+    "page": "fed"
+  },
+  {
+    "id": "cung-tien-m2",
+    "title": "Cung tiền M2 & thuyết số lượng tiền tệ",
+    "group": "Tiền tệ",
+    "page": "fed"
+  },
+  {
+    "id": "duong-cong-phillips",
+    "title": "Đường cong Phillips",
+    "group": "Thị trường lao động",
+    "lab": "phillips"
+  },
+  {
+    "id": "duong-cong-loi-suat",
+    "title": "Đường cong lợi suất",
+    "group": "Thị trường tài chính",
+    "lab": "term"
+  },
+  {
+    "id": "bo-ba-bat-kha-thi",
+    "title": "Bộ ba bất khả thi",
+    "group": "Kinh tế quốc tế"
+  }
 ]

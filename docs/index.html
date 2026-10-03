@@ -87,6 +87,7 @@ input[type=range]{vertical-align:middle}
     <a href="#tong-quan" data-v="tong-quan">Tổng quan</a>
     <a href="#quoc-gia" data-v="quoc-gia">Quốc gia</a>
     <a href="#thuc-te" data-v="thuc-te">Lý thuyết ↔ Thực tế</a>
+    <a href="#fed" data-v="fed">🇺🇸 Fed & M2</a>
     <a href="#thu-vien" data-v="thu-vien">Thư viện lý thuyết</a>
   </nav>
 </div></header>
@@ -94,7 +95,7 @@ input[type=range]{vertical-align:middle}
 <main class="wrap">
   <section class="view" id="v-tong-quan">
     <h2>Bức tranh vĩ mô hiện tại</h2>
-    <p class="sub">Châu Úc · Châu Âu · Châu Á. Bấm vào một nước để xem chi tiết. Lạm phát <span class="hot">đỏ</span> = vượt mục tiêu &gt;1 điểm %, <span class="cold">xanh</span> = dưới mục tiêu &gt;1 điểm %.</p>
+    <p class="sub">Mỹ (tham chiếu) · Châu Úc · Châu Âu · Châu Á. Bấm vào một nước để xem chi tiết. Lạm phát <span class="hot">đỏ</span> = vượt mục tiêu &gt;1 điểm %, <span class="cold">xanh</span> = dưới mục tiêu &gt;1 điểm %.</p>
     <div class="card tbl"><table id="ov"></table></div>
     <p class="sub">Lập trường theo Taylor: so sánh lãi suất thực tế với mức gợi ý của Quy tắc Taylor đơn giản (r* = 0.5%, output gap = 0). Đây là thước đo định hướng, không phải dự báo.</p>
   </section>
@@ -117,6 +118,23 @@ input[type=range]{vertical-align:middle}
     <div class="card" id="lRead"></div>
   </section>
 
+  <section class="view" id="v-fed">
+    <h2>Cục Dự trữ Liên bang Mỹ (Fed) & cung tiền M2</h2>
+    <p class="sub">Lãi suất của Fed là "lãi suất của thế giới": mọi ngân hàng trung ương ở trang này đều phải để mắt tới nó. <a href="#thu-vien/lich-su-fed">Đọc lịch sử các chu kỳ của Fed →</a></p>
+    <div class="stat card" id="fStat"></div>
+    <div class="card">
+      <h3>Lãi suất mục tiêu của Fed</h3><p class="note">Cận trên của biên độ mục tiêu, cuối mỗi tháng. Chấm <span class="hot">đỏ</span> = tăng, <span class="cold">xanh</span> = giảm.</p>
+      <div class="controls" id="fRange"></div>
+      <div class="chart" style="height:340px"><canvas id="fch1"></canvas></div>
+    </div>
+    <div class="card tbl"><h3>Các chu kỳ tăng / giảm lãi suất từ 1988</h3><p class="note">Một chu kỳ = chuỗi các lần điều chỉnh liên tiếp cùng chiều. Đơn vị: điểm cơ bản (bps), 100 bps = 1%.</p><table id="fCycles"></table></div>
+    <div class="grid">
+      <div class="card"><h3>Cung tiền M2</h3><p class="note">Nghìn tỷ USD (cột trái) và tăng trưởng so với cùng kỳ (cột phải)</p><div class="chart"><canvas id="fch2"></canvas></div></div>
+      <div class="card"><h3>M2 có dự báo được lạm phát?</h3><p class="note">Tăng trưởng M2 được dời tới trước <select id="fLag"><option value="0">0</option><option value="6">6</option><option value="12">12</option><option value="18" selected>18</option><option value="24">24</option></select> tháng, so với lạm phát CPI. <span id="fCorr"></span></p><div class="chart"><canvas id="fch3"></canvas></div></div>
+    </div>
+    <div class="card tbl"><h3>Các lần điều chỉnh gần nhất</h3><table id="fMoves"></table></div>
+  </section>
+
   <section class="view" id="v-thu-vien">
     <div class="lib"><div class="toc" id="toc"></div><article id="art"></article></div>
   </section>
@@ -126,6 +144,7 @@ input[type=range]{vertical-align:middle}
 const $ = s => document.querySelector(s);
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 let D, LIB, charts = {};
+const REGIONS = ["Bắc Mỹ", "Châu Úc", "Châu Âu", "Châu Á"];
 const SERIES_NAMES = {rate: "Lãi suất điều hành", cpi: "Lạm phát (y/y)", y10: "Lợi suất 10 năm", une: "Thất nghiệp"};
 
 // ---------- helpers ----------
@@ -176,7 +195,7 @@ const realRate = c => {
 
 // ---------- overview ----------
 function renderOverview() {
-  const regions = ["Châu Úc", "Châu Âu", "Châu Á"];
+  const regions = REGIONS;
   let h = `<thead><tr><th>Nước</th><th>Lãi suất điều hành</th><th>Δ 12 tháng</th><th>Lạm phát</th><th>Mục tiêu</th><th>Lãi suất thực</th><th>10 năm</th><th>Chênh lệch kỳ hạn</th><th>Thất nghiệp</th><th>GDP (năm)</th><th>Lập trường (Taylor)</th></tr></thead><tbody>`;
   for (const reg of regions) {
     h += `<tr class="region"><td colspan="11">${reg}</td></tr>`;
@@ -209,7 +228,7 @@ function renderOverview() {
 
 // ---------- country ----------
 function countryOptions(sel) {
-  sel.innerHTML = ["Châu Úc", "Châu Âu", "Châu Á"].map(r => `<optgroup label="${r}">` +
+  sel.innerHTML = REGIONS.map(r => `<optgroup label="${r}">` +
     Object.entries(D.countries).filter(([, c]) => c.region === r).map(([id, c]) => `<option value="${id}">${c.name}</option>`).join("") + "</optgroup>").join("");
 }
 function renderCountry() {
@@ -298,6 +317,71 @@ function renderLab() {
   read.innerHTML += `<p><a class="labbtn" href="#thu-vien/${LABS[LAB].art}">📖 Đọc lý thuyết: ${LABS[LAB].name}</a></p>`;
 }
 
+// ---------- Fed & M2 ----------
+const vnDate = d => d.split("-").reverse().join("/");
+const bpsTxt = b => `<span class="${b > 0 ? "hot" : "cold"}">${b > 0 ? "+" : ""}${b}</span>`;
+const monthsBetween = (a, b) => { const [y1, m1] = a.split("-").map(Number), [y2, m2] = b.split("-").map(Number); return (y2 - y1) * 12 + (m2 - m1); };
+function corr(a, b) {
+  const n = a.length; if (n < 3) return null;
+  const ma = a.reduce((x, y) => x + y) / n, mb = b.reduce((x, y) => x + y) / n;
+  let sab = 0, saa = 0, sbb = 0;
+  for (let i = 0; i < n; i++) { sab += (a[i] - ma) * (b[i] - mb); saa += (a[i] - ma) ** 2; sbb += (b[i] - mb) ** 2; }
+  return sab / Math.sqrt(saa * sbb);
+}
+let FED_YEARS = 26;
+function renderFed() {
+  const F = D.fed, us = D.countries.US.series;
+  if (!F) { $("#fStat").textContent = "Chưa có dữ liệu Fed."; return; }
+  const lastMove = F.moves[F.moves.length - 1], cur = F.cycles[F.cycles.length - 1];
+  const m2 = last(us.m2), m2y = last(us.m2_yoy), pce = last(us.core_pce), cpi = last(us.cpi);
+  $("#fStat").innerHTML = [
+    ["Biên độ mục tiêu hiện tại", `${f1(F.now.lower)}–${f1(F.now.upper)}%`],
+    ["Lần điều chỉnh gần nhất", `${bpsTxt(lastMove.bps)} bps<span class="d">${vnDate(lastMove.date)}</span>`],
+    ["Chu kỳ hiện tại", `${cur.dir === "up" ? "Tăng" : "Giảm"} ${cur.moves} lần<span class="d">từ ${vnDate(cur.start)}, tổng ${cur.bps > 0 ? "+" : ""}${cur.bps} bps</span>`],
+    ["Lạm phát CPI / PCE lõi", `${f1(cpi[1])}% / ${f1(pce[1])}%<span class="d">${pce[0]} — mục tiêu Fed: PCE 2%</span>`],
+    ["Cung tiền M2", `${m2[1].toFixed(2)} nghìn tỷ $<span class="d">${m2[0]}, ${sign(m2y[1])}% so với cùng kỳ</span>`],
+  ].map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join("");
+
+  // Biểu đồ lãi suất mục tiêu + chấm tại các lần điều chỉnh
+  $("#fRange").innerHTML = [10, 26, 43].map(y => `<button data-fy="${y}" class="${y === FED_YEARS ? "on" : ""}">${y === 43 ? "Từ 1983" : y === 26 ? "Từ 2000" : "10 năm"}</button>`).join(" ");
+  $("#fRange").onclick = e => { const y = +e.target.dataset.fy; if (y) { FED_YEARS = y; renderFed(); } };
+  const end = last(F.target_monthly)[0], L = monthsFrom(ymShift(end, -12 * FED_YEARS + 1), end).filter(m => m >= "1983-01");
+  // Chấm tại tháng có thay đổi so với tháng trước
+  const tm = new Map(F.target_monthly);
+  const dots = dir => L.map(l => { const p = tm.get(ymShift(l, -1)), c = tm.get(l); return p != null && c != null && (dir > 0 ? c > p : c < p) ? c : null; });
+  draw("fch1", {type: "line", data: {labels: L, datasets: [
+    line("Lãi suất mục tiêu (cận trên)", F.target_monthly, L, css("--s1"), {stepped: true}),
+    line("Lãi suất hiệu dụng (EFFR)", us.rate, L, css("--muted"), {borderWidth: 1}),
+    {type: "scatter", label: "Tăng", data: dots(1), backgroundColor: css("--hot"), pointRadius: 4, showLine: false},
+    {type: "scatter", label: "Giảm", data: dots(-1), backgroundColor: css("--cold"), pointRadius: 4, showLine: false},
+  ]}});
+
+  $("#fCycles").innerHTML = `<thead><tr><th>Chu kỳ</th><th>Bắt đầu</th><th>Kết thúc</th><th>Số lần</th><th>Từ → Đến</th><th>Tổng (bps)</th><th>Kéo dài</th></tr></thead><tbody>` +
+    [...F.cycles].reverse().map((c, i) => `<tr><td><b class="${c.dir === "up" ? "hot" : "cold"}">${c.dir === "up" ? "▲ Tăng" : "▼ Giảm"}</b>${i === 0 ? ' <span class="chip">đang diễn ra</span>' : ""}</td>
+      <td>${vnDate(c.start)}</td><td>${vnDate(c.end)}</td><td>${c.moves}</td><td>${f1(c.from)}% → ${f1(c.to)}%</td><td>${bpsTxt(c.bps)}</td><td>${monthsBetween(c.start, c.end) + 1} tháng</td></tr>`).join("") + "</tbody>";
+
+  $("#fMoves").innerHTML = `<thead><tr><th>Ngày</th><th>Thay đổi (bps)</th><th>Biên độ mới</th></tr></thead><tbody>` +
+    [...F.moves].reverse().slice(0, 15).map(m => `<tr><td>${vnDate(m.date)}</td><td>${bpsTxt(m.bps)}</td><td>${m.lower === m.upper ? f1(m.upper) : f1(m.lower) + "–" + f1(m.upper)}%</td></tr>`).join("") + "</tbody>";
+
+  // M2
+  const LM = monthsFrom(ymShift(last(us.m2)[0], -12 * Math.min(FED_YEARS, 26) + 1), last(us.m2)[0]);
+  draw("fch2", {type: "bar", data: {labels: LM, datasets: [
+    Object.assign(line("Tăng trưởng y/y (%)", us.m2_yoy, LM, css("--s2")), {type: "line", yAxisID: "y1"}),
+    {label: "M2 (nghìn tỷ $)", data: LM.map(l => new Map(us.m2).get(l) ?? null), backgroundColor: css("--s1") + "88", yAxisID: "y", barPercentage: 1, categoryPercentage: 1},
+  ]}, options: {scales: {x: {ticks: {maxTicksLimit: 8, maxRotation: 0}, grid: {display: false}}, y: {position: "left", ticks: {callback: v => v + "T"}}, y1: {position: "right", grid: {display: false}, ticks: {callback: v => v + "%"}}}}});
+
+  const lag = +$("#fLag").value, cpiM = new Map(us.cpi), m2M = new Map(us.m2_yoy.map(([d, v]) => [ymShift(d, lag), v]));
+  const LC = monthsFrom(ymShift(last(us.cpi)[0], -12 * Math.max(FED_YEARS, 26) + 1), ymShift(last(us.m2_yoy)[0], lag)).filter(m => m >= "1961-01");
+  const pairs = LC.filter(l => cpiM.has(l) && m2M.has(l));
+  const r = corr(pairs.map(l => m2M.get(l)), pairs.map(l => cpiM.get(l)));
+  $("#fCorr").innerHTML = r == null ? "" : `Hệ số tương quan trong giai đoạn này: <b>${r.toFixed(2)}</b>`;
+  draw("fch3", {type: "line", data: {labels: LC, datasets: [
+    line(`M2 y/y (dời ${lag} tháng)`, [...m2M], LC, css("--s1")),
+    line("Lạm phát CPI y/y", us.cpi, LC, css("--s2")),
+  ]}});
+}
+$("#fLag") && ($("#fLag").onchange = () => renderFed());
+
 // ---------- library ----------
 function mdRender(md) {
   const math = [];
@@ -311,7 +395,7 @@ async function renderArticle(id) {
   $("#toc").innerHTML = LIB.map(a => { const head = a.group !== g ? `<div class="g">${(g = a.group)}</div>` : ""; return head + `<a href="#thu-vien/${a.id}" class="${a.id === id ? "on" : ""}">${a.title}</a>`; }).join("");
   const meta = LIB.find(a => a.id === id);
   const md = await fetch(`content/${id}.md`).then(r => r.text());
-  $("#art").innerHTML = mdRender(md) + (meta && meta.lab ? `<p><a class="labbtn" href="#thuc-te/${meta.lab}">📊 Xem trên dữ liệu thật</a></p>` : "");
+  $("#art").innerHTML = mdRender(md) + (meta && (meta.lab || meta.page) ? `<p><a class="labbtn" href="#${meta.page || "thuc-te/" + meta.lab}">📊 Xem trên dữ liệu thật</a></p>` : "");
   window.scrollTo(0, 0);
 }
 
@@ -323,6 +407,7 @@ function route() {
   if (v === "quoc-gia") renderCountry();
   if (v === "thuc-te") { if (arg && LABS[arg]) LAB = arg; renderLab(); }
   if (v === "thu-vien") renderArticle(arg);
+  if (v === "fed") renderFed();
 }
 
 (async () => {
