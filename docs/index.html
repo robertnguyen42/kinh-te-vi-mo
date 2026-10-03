@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinh tế Vĩ mô</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+:root{
+  --bg:#f7f7f5;--surface:#ffffff;--surface-2:#f0efec;--border:#e3e1dc;
+  --text:#1c1b19;--muted:#6b6862;--accent:#2f5bd3;
+  --hot:#c2410c;--cold:#1d6fb8;--ok:#2e7d4f;
+  --s1:#2f5bd3;--s2:#d9480f;--s3:#2e7d4f;--s4:#8b5cf6;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141413;--surface:#1d1d1b;--surface-2:#262624;--border:#34332f;
+  --text:#ecebe7;--muted:#9a978f;--accent:#7c9cf5;
+  --hot:#f08a5d;--cold:#6cb4f0;--ok:#5fbf86;
+  --s1:#7c9cf5;--s2:#f08a5d;--s3:#5fbf86;--s4:#b49cf8;
+}}
+:root[data-theme="dark"]{
+  --bg:#141413;--surface:#1d1d1b;--surface-2:#262624;--border:#34332f;
+  --text:#ecebe7;--muted:#9a978f;--accent:#7c9cf5;
+  --hot:#f08a5d;--cold:#6cb4f0;--ok:#5fbf86;
+  --s1:#7c9cf5;--s2:#f08a5d;--s3:#5fbf86;--s4:#b49cf8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 Inter,system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--border)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;gap:16px;padding:14px 0 6px;flex-wrap:wrap}
+.top h1{font-size:18px;margin:0;font-weight:700}
+.top .upd{color:var(--muted);font-size:13px;margin-left:auto}
+nav{display:flex;gap:4px;overflow-x:auto}
+nav a{padding:8px 12px;color:var(--muted);text-decoration:none;font-weight:500;border-bottom:2px solid transparent;white-space:nowrap}
+nav a.on{color:var(--text);border-color:var(--accent)}
+main{padding:24px 0 60px}
+.view{display:none}.view.on{display:block}
+h2{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+th:first-child,td:first-child{text-align:left}
+tr.region td{background:var(--surface-2);font-weight:600;text-align:left;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+tbody tr.c{cursor:pointer}tbody tr.c:hover td{background:var(--surface-2)}
+.d{font-size:11px;color:var(--muted);display:block}
+.hot{color:var(--hot);font-weight:600}.cold{color:var(--cold);font-weight:600}.ok{color:var(--ok)}
+.chip{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
+.chip.hot,.chip.cold{background:var(--surface-2)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+select,button{font:inherit;font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:16px}
+.chart{position:relative;height:300px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card .note{color:var(--muted);font-size:13px;margin:0 0 10px}
+.lib{display:grid;grid-template-columns:240px 1fr;gap:24px}
+@media (max-width:760px){.lib{grid-template-columns:1fr}}
+.toc a{display:block;padding:6px 10px;border-radius:6px;color:var(--text);text-decoration:none;font-size:14px}
+.toc a.on{background:var(--surface-2);font-weight:600}
+.toc .g{font-size:11px;text-transform:uppercase;color:var(--muted);margin:14px 10px 4px;letter-spacing:.05em}
+article{max-width:760px}
+article h1{font-size:24px;margin-top:0}
+article table{font-size:13px;margin:12px 0}
+article td,article th{white-space:normal;text-align:left;vertical-align:top}
+article blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:4px 14px;background:var(--surface-2);border-radius:0 8px 8px 0}
+article .katex-display{overflow-x:auto;overflow-y:hidden;padding:4px 0}
+.labbtn{display:inline-block;margin-top:8px;padding:8px 14px;background:var(--accent);color:#fff;border-radius:8px;text-decoration:none}
+.stat{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:8px}
+.stat div{font-size:13px;color:var(--muted)}.stat b{display:block;font-size:22px;color:var(--text)}
+input[type=range]{vertical-align:middle}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top"><h1>📈 Kinh tế Vĩ mô</h1><span class="upd" id="upd"></span></div>
+  <nav id="nav">
+    <a href="#tong-quan" data-v="tong-quan">Tổng quan</a>
+    <a href="#quoc-gia" data-v="quoc-gia">Quốc gia</a>
+    <a href="#thuc-te" data-v="thuc-te">Lý thuyết ↔ Thực tế</a>
+    <a href="#thu-vien" data-v="thu-vien">Thư viện lý thuyết</a>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <section class="view" id="v-tong-quan">
+    <h2>Bức tranh vĩ mô hiện tại</h2>
+    <p class="sub">Châu Úc · Châu Âu · Châu Á. Bấm vào một nước để xem chi tiết. Lạm phát <span class="hot">đỏ</span> = vượt mục tiêu &gt;1 điểm %, <span class="cold">xanh</span> = dưới mục tiêu &gt;1 điểm %.</p>
+    <div class="card tbl"><table id="ov"></table></div>
+    <p class="sub">Lập trường theo Taylor: so sánh lãi suất thực tế với mức gợi ý của Quy tắc Taylor đơn giản (r* = 0.5%, output gap = 0). Đây là thước đo định hướng, không phải dự báo.</p>
+  </section>
+
+  <section class="view" id="v-quoc-gia">
+    <div class="controls"><select id="cSel"></select><span id="cRange"></span></div>
+    <div class="stat" id="cStat"></div>
+    <div class="grid">
+      <div class="card"><h3>Lãi suất điều hành & lạm phát</h3><p class="note">% — theo tháng</p><div class="chart"><canvas id="ch1"></canvas></div></div>
+      <div class="card"><h3>Lợi suất trái phiếu 10 năm</h3><p class="note">% — theo tháng</p><div class="chart"><canvas id="ch2"></canvas></div></div>
+      <div class="card"><h3>Tỷ lệ thất nghiệp</h3><p class="note">% lực lượng lao động</p><div class="chart"><canvas id="ch3"></canvas></div></div>
+      <div class="card"><h3>Tăng trưởng GDP & lạm phát theo năm</h3><p class="note">% — World Bank</p><div class="chart"><canvas id="ch4"></canvas></div></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-thuc-te">
+    <div class="controls" id="labTabs"></div>
+    <div class="controls"><select id="lSel"></select><span id="lRange"></span><span id="lExtra"></span></div>
+    <div class="card"><h3 id="lTitle"></h3><p class="note" id="lNote"></p><div class="chart" style="height:380px"><canvas id="lch"></canvas></div></div>
+    <div class="card" id="lRead"></div>
+  </section>
+
+  <section class="view" id="v-thu-vien">
+    <div class="lib"><div class="toc" id="toc"></div><article id="art"></article></div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let D, LIB, charts = {};
+const SERIES_NAMES = {rate: "Lãi suất điều hành", cpi: "Lạm phát (y/y)", y10: "Lợi suất 10 năm", une: "Thất nghiệp"};
+
+// ---------- helpers ----------
+const last = s => s && s.length ? s[s.length - 1] : null;
+const valAt = (s, ym) => { if (!s) return null; const m = new Map(s); return m.get(ym) ?? null; };
+const fmt = v => v == null ? "—" : v.toFixed(2).replace(/\.?0+$/, m => m.includes(".") ? "" : m);
+const f1 = v => v == null ? "—" : (Math.round(v * 100) / 100).toFixed(2);
+const sign = v => v == null ? "" : (v > 0 ? "+" : "") + f1(v);
+const ymShift = (ym, n) => { let [y, m] = ym.split("-").map(Number); m += n; while (m <= 0) { m += 12; y--; } while (m > 12) { m -= 12; y++; } return `${y}-${String(m).padStart(2, "0")}`; };
+const taylor = (pi, target, rstar = 0.5) => pi == null ? null : rstar + pi + 0.5 * (pi - target);
+
+function monthsFrom(start, end) { const out = []; for (let m = start; m <= end; m = ymShift(m, 1)) out.push(m); return out; }
+
+let RANGE_YEARS = 10;
+function rangeButtons(el, onChange) {
+  el.innerHTML = [5, 10, 26].map(y => `<button data-y="${y}" class="${y === RANGE_YEARS ? "on" : ""}">${y === 26 ? "Từ 2000" : y + " năm"}</button>`).join(" ");
+  el.onclick = e => { const y = +e.target.dataset.y; if (!y) return; RANGE_YEARS = y; document.querySelectorAll("[data-y]").forEach(b => b.classList.toggle("on", +b.dataset.y === y)); onChange(); };
+}
+function labelsFor(seriesList) {
+  const ends = seriesList.filter(Boolean).map(s => last(s)[0]);
+  const end = ends.sort().pop() || "2026-01";
+  return monthsFrom(ymShift(end, -12 * RANGE_YEARS + 1), end);
+}
+
+function chartDefaults() {
+  Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+  Chart.defaults.color = css("--muted");
+  Chart.defaults.borderColor = css("--border");
+}
+function draw(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  cfg.options = Object.assign({
+    responsive: true, maintainAspectRatio: false, animation: false,
+    interaction: {mode: "index", intersect: false},
+    plugins: {legend: {labels: {boxWidth: 12, usePointStyle: true}}, tooltip: {callbacks: {label: c => `${c.dataset.label}: ${f1(c.parsed.y)}`}}},
+    scales: {x: {ticks: {maxTicksLimit: 8, maxRotation: 0}, grid: {display: false}}, y: {ticks: {callback: v => v + "%"}}}
+  }, cfg.options || {});
+  charts[id] = new Chart($("#" + id), cfg);
+}
+const line = (label, s, labels, color, extra = {}) => {
+  const m = new Map(s || []);
+  return Object.assign({label, data: labels.map(l => m.get(l) ?? null), borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 0, spanGaps: true, tension: .15}, extra);
+};
+const realRate = c => {
+  const r = c.series.rate, p = new Map(c.series.cpi || []);
+  return r ? r.map(([d, v]) => p.has(d) ? [d, +(v - p.get(d)).toFixed(2)] : null).filter(Boolean) : null;
+};
+
+// ---------- overview ----------
+function renderOverview() {
+  const regions = ["Châu Úc", "Châu Âu", "Châu Á"];
+  let h = `<thead><tr><th>Nước</th><th>Lãi suất điều hành</th><th>Δ 12 tháng</th><th>Lạm phát</th><th>Mục tiêu</th><th>Lãi suất thực</th><th>10 năm</th><th>Chênh lệch kỳ hạn</th><th>Thất nghiệp</th><th>GDP (năm)</th><th>Lập trường (Taylor)</th></tr></thead><tbody>`;
+  for (const reg of regions) {
+    h += `<tr class="region"><td colspan="11">${reg}</td></tr>`;
+    for (const [id, c] of Object.entries(D.countries).filter(([, c]) => c.region === reg)) {
+      const s = c.series, r = last(s.rate), p = last(s.cpi), y = last(s.y10), u = last(s.une), g = last(s.gdp_y), pa = last(s.cpi_y);
+      const r12 = r ? valAt(s.rate, ymShift(r[0], -12)) : null;
+      const pi = p ? p[1] : null;
+      const cls = pi == null ? "" : pi > c.target + 1 ? "hot" : pi < c.target - 1 ? "cold" : "ok";
+      const real = r && pi != null ? r[1] - pi : null;
+      const term = r && y ? y[1] - r[1] : null;
+      const tay = taylor(pi, c.target), gap = r && tay != null ? r[1] - tay : null;
+      const stance = gap == null ? "—" : gap < -1 ? `<span class="chip hot">Lỏng hơn ${f1(-gap)}</span>` : gap > 1 ? `<span class="chip cold">Chặt hơn ${f1(gap)}</span>` : `<span class="chip">Gần mức Taylor</span>`;
+      const cell = (o, txt) => o ? `${txt}<span class="d">${o[0]}</span>` : "—";
+      h += `<tr class="c" data-id="${id}"><td><b>${c.name}</b><span class="d">${c.bank}</span></td>
+        <td>${r ? cell(r, f1(r[1]) + "%") : `<span class="d">${id === "SG" ? "Điều hành bằng tỷ giá" : "—"}</span>`}</td>
+        <td>${r12 == null ? "—" : sign(r[1] - r12)}</td>
+        <td>${p ? cell(p, `<span class="${cls}">${f1(pi)}%</span>`) : pa ? cell(pa, `<span>${f1(pa[1])}%</span>`) : "—"}</td>
+        <td>${c.target}%</td>
+        <td>${real == null ? "—" : `<span class="${real < 0 ? "hot" : ""}">${f1(real)}%</span>`}</td>
+        <td>${y ? cell(y, f1(y[1]) + "%") : "—"}</td>
+        <td>${term == null ? "—" : `<span class="${term < 0 ? "hot" : ""}">${sign(term)}</span>`}</td>
+        <td>${u ? cell(u, f1(u[1]) + "%") : "—"}</td>
+        <td>${g ? cell(g, f1(g[1]) + "%") : "—"}</td>
+        <td>${stance}</td></tr>`;
+    }
+  }
+  $("#ov").innerHTML = h + "</tbody>";
+  $("#ov").onclick = e => { const tr = e.target.closest("tr.c"); if (tr) { $("#cSel").value = tr.dataset.id; location.hash = "quoc-gia"; } };
+}
+
+// ---------- country ----------
+function countryOptions(sel) {
+  sel.innerHTML = ["Châu Úc", "Châu Âu", "Châu Á"].map(r => `<optgroup label="${r}">` +
+    Object.entries(D.countries).filter(([, c]) => c.region === r).map(([id, c]) => `<option value="${id}">${c.name}</option>`).join("") + "</optgroup>").join("");
+}
+function renderCountry() {
+  const id = $("#cSel").value, c = D.countries[id], s = c.series;
+  const L = labelsFor([s.rate, s.cpi, s.y10, s.une]);
+  const r = last(s.rate), p = last(s.cpi);
+  $("#cStat").innerHTML = [
+    ["Ngân hàng TW", c.bank], ["Lãi suất điều hành", r ? f1(r[1]) + "%" : "—"], ["Lạm phát", p ? f1(p[1]) + "%" : "—"],
+    ["Mục tiêu", c.target + "%"], ["Gợi ý Taylor", p ? f1(taylor(p[1], c.target)) + "%" : "—"]
+  ].map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join("");
+  draw("ch1", {type: "line", data: {labels: L, datasets: [
+    line("Lãi suất điều hành", s.rate, L, css("--s1"), {stepped: true}),
+    line("Lạm phát (y/y)", s.cpi, L, css("--s2")),
+    line("Mục tiêu", L.map(l => [l, c.target]), L, css("--muted"), {borderDash: [4, 4], borderWidth: 1})
+  ]}});
+  draw("ch2", {type: "line", data: {labels: L, datasets: s.y10 ? [line("Lợi suất 10 năm", s.y10, L, css("--s4")), line("Lãi suất điều hành", s.rate, L, css("--s1"), {stepped: true, borderWidth: 1})] : []}});
+  draw("ch3", {type: "line", data: {labels: L, datasets: s.une ? [line("Thất nghiệp", s.une, L, css("--s3"))] : []}});
+  const yrs = [...new Set([...(s.gdp_y || []), ...(s.cpi_y || [])].map(x => x[0]))].sort().slice(-Math.min(RANGE_YEARS, 26));
+  const ym = a => { const m = new Map(a || []); return yrs.map(y => m.get(y) ?? null); };
+  draw("ch4", {type: "bar", data: {labels: yrs, datasets: [
+    {label: "Tăng trưởng GDP", data: ym(s.gdp_y), backgroundColor: css("--s1"), borderRadius: 3},
+    {label: "Lạm phát (năm)", data: ym(s.cpi_y), backgroundColor: css("--s2"), borderRadius: 3}
+  ]}, options: {interaction: {mode: "index", intersect: false}}});
+}
+
+// ---------- lab ----------
+const LABS = {
+  taylor: {name: "Quy tắc Taylor", art: "quy-tac-taylor"},
+  real: {name: "Lãi suất thực", art: "lai-suat-thuc"},
+  phillips: {name: "Đường cong Phillips", art: "duong-cong-phillips"},
+  term: {name: "Chênh lệch kỳ hạn", art: "duong-cong-loi-suat"},
+};
+let LAB = "taylor", RSTAR = 0.5;
+function renderLab() {
+  $("#labTabs").innerHTML = Object.entries(LABS).map(([k, l]) => `<button data-lab="${k}" class="${k === LAB ? "on" : ""}">${l.name}</button>`).join("");
+  const id = $("#lSel").value, c = D.countries[id], s = c.series;
+  const read = $("#lRead");
+  $("#lExtra").innerHTML = "";
+  if (LAB === "taylor") {
+    $("#lExtra").innerHTML = `r* = <input type="range" id="rstar" min="-1" max="3" step="0.25" value="${RSTAR}"> <b id="rsv">${RSTAR}%</b>`;
+    $("#rstar").oninput = e => { RSTAR = +e.target.value; renderLab(); };
+    const L = labelsFor([s.rate, s.cpi]);
+    const tay = (s.cpi || []).map(([d, v]) => [d, taylor(v, c.target, RSTAR)]);
+    $("#lTitle").textContent = `${c.name}: lãi suất thực tế vs. Quy tắc Taylor`;
+    $("#lNote").textContent = `i = r* + π + 0.5(π − ${c.target}%) — output gap giả định = 0`;
+    draw("lch", {type: "line", data: {labels: L, datasets: [
+      line("Lãi suất thực tế", s.rate, L, css("--s1"), {stepped: true}),
+      line("Gợi ý Taylor", tay, L, css("--s2"), {borderDash: [5, 3]}),
+    ]}});
+    const r = last(s.rate), p = last(s.cpi);
+    if (r && p) {
+      const t = taylor(p[1], c.target, RSTAR), gap = r[1] - t;
+      read.innerHTML = `<h3>Đọc kết quả</h3><p>Với lạm phát ${f1(p[1])}% (${p[0]}) và mục tiêu ${c.target}%, Quy tắc Taylor gợi ý lãi suất khoảng <b>${f1(t)}%</b>. ${c.bank} đang đặt <b>${f1(r[1])}%</b>, tức là <b class="${gap < 0 ? "hot" : "cold"}">${gap < 0 ? "lỏng hơn" : "chặt hơn"} ${f1(Math.abs(gap))} điểm %</b> so với quy tắc.</p><p class="note">Kéo thanh r* để thấy kết luận nhạy thế nào với giả định về lãi suất trung lập. Nếu kết luận đổi chiều chỉ vì r* thay đổi 0.5%, nghĩa là chính sách đang ở gần mức trung lập.</p>`;
+    } else read.innerHTML = `<p>Thiếu dữ liệu lãi suất điều hành hoặc CPI tháng cho ${c.name}.</p>`;
+  } else if (LAB === "real") {
+    const rr = realRate(c), L = labelsFor([rr]);
+    $("#lTitle").textContent = `${c.name}: lãi suất thực (lãi suất điều hành − lạm phát)`;
+    $("#lNote").textContent = "Dưới 0 = chính sách thực chất đang kích thích";
+    draw("lch", {type: "line", data: {labels: L, datasets: rr ? [
+      line("Lãi suất thực", rr, L, css("--s1"), {fill: {target: {value: 0}, above: css("--s1") + "33", below: css("--s2") + "44"}}),
+      line("0", L.map(l => [l, 0]), L, css("--muted"), {borderWidth: 1, borderDash: [3, 3]}),
+    ] : []}});
+    const v = last(rr || []);
+    read.innerHTML = v ? `<h3>Đọc kết quả</h3><p>Lãi suất thực hiện tại của ${c.name}: <b class="${v[1] < 0 ? "hot" : ""}">${f1(v[1])}%</b> (${v[0]}). ${v[1] < 0 ? "Âm: người gửi tiết kiệm mất sức mua, vay mượn được khuyến khích." : v[1] > 1.5 ? "Dương khá cao: chính sách đang kìm hãm, có lợi cho người gửi tiết kiệm." : "Gần vùng trung lập (0–1.5%)."}</p>` : `<p>Thiếu dữ liệu.</p>`;
+  } else if (LAB === "phillips") {
+    const u = new Map(s.une || []), pts = (s.cpi || []).filter(([d]) => u.has(d) && d >= ymShift(last(s.cpi)[0], -12 * RANGE_YEARS)).map(([d, v]) => ({x: u.get(d), y: v, d}));
+    $("#lTitle").textContent = `${c.name}: thất nghiệp (trục ngang) vs. lạm phát (trục dọc)`;
+    $("#lNote").textContent = "Mỗi chấm là một tháng; màu càng đậm là càng gần hiện tại";
+    const n = pts.length;
+    draw("lch", {type: "scatter", data: {datasets: [{label: "Tháng", data: pts, pointRadius: 3.5,
+      backgroundColor: pts.map((_, i) => css("--s1") + Math.round(40 + 215 * i / Math.max(1, n - 1)).toString(16).padStart(2, "0"))}]},
+      options: {interaction: {mode: "nearest", intersect: true}, plugins: {legend: {display: false}, tooltip: {callbacks: {label: c => `${c.raw.d}: thất nghiệp ${f1(c.raw.x)}%, lạm phát ${f1(c.raw.y)}%`}}},
+        scales: {x: {type: "linear", title: {display: true, text: "Thất nghiệp %"}}, y: {title: {display: true, text: "Lạm phát %"}}}}});
+    read.innerHTML = n ? `<h3>Gợi ý đọc</h3><p>Nếu các chấm tạo thành dải dốc xuống, đường cong Phillips "đang hoạt động". Nếu các chấm dàn theo chiều dọc (thất nghiệp gần như không đổi mà lạm phát lên xuống), đó là dấu hiệu của <b>cú sốc cung</b> hoặc kỳ vọng thay đổi, như năm 2021–2023.</p>` : `<p>${c.name} chưa có dữ liệu thất nghiệp theo tháng. Hãy thử Úc, Nhật, Hàn Quốc, Anh, Đức hoặc Khu vực Euro.</p>`;
+  } else if (LAB === "term") {
+    const r = new Map(s.rate || []), sp = (s.y10 || []).filter(([d]) => r.has(d)).map(([d, v]) => [d, +(v - r.get(d)).toFixed(2)]), L = labelsFor([sp.length ? sp : null]);
+    $("#lTitle").textContent = `${c.name}: lợi suất 10 năm − lãi suất điều hành`;
+    $("#lNote").textContent = "Dưới 0 = đường cong đảo ngược, tín hiệu cảnh báo suy thoái";
+    draw("lch", {type: "line", data: {labels: L, datasets: sp.length ? [
+      line("Chênh lệch kỳ hạn", sp, L, css("--s4"), {fill: {target: {value: 0}, above: css("--s4") + "33", below: css("--s2") + "55"}}),
+      line("0", L.map(l => [l, 0]), L, css("--muted"), {borderWidth: 1, borderDash: [3, 3]}),
+    ] : []}});
+    const v = last(sp);
+    read.innerHTML = v ? `<h3>Đọc kết quả</h3><p>Chênh lệch hiện tại: <b class="${v[1] < 0 ? "hot" : ""}">${sign(v[1])} điểm %</b> (${v[0]}). ${v[1] < 0 ? "Đảo ngược: thị trường kỳ vọng ngân hàng trung ương sẽ phải hạ lãi suất." : "Dốc lên: trạng thái bình thường."}</p>` : `<p>${c.name} chưa có dữ liệu lợi suất 10 năm.</p>`;
+  }
+  read.innerHTML += `<p><a class="labbtn" href="#thu-vien/${LABS[LAB].art}">📖 Đọc lý thuyết: ${LABS[LAB].name}</a></p>`;
+}
+
+// ---------- library ----------
+function mdRender(md) {
+  const math = [];
+  md = md.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { math.push(m); return `@@MATH${math.length - 1}@@`; });
+  let html = marked.parse(md);
+  return html.replace(/@@MATH(\d+)@@/g, (_, i) => katex.renderToString(math[+i], {displayMode: true, throwOnError: false}));
+}
+async function renderArticle(id) {
+  id = id || LIB[0].id;
+  let g = "";
+  $("#toc").innerHTML = LIB.map(a => { const head = a.group !== g ? `<div class="g">${(g = a.group)}</div>` : ""; return head + `<a href="#thu-vien/${a.id}" class="${a.id === id ? "on" : ""}">${a.title}</a>`; }).join("");
+  const meta = LIB.find(a => a.id === id);
+  const md = await fetch(`content/${id}.md`).then(r => r.text());
+  $("#art").innerHTML = mdRender(md) + (meta && meta.lab ? `<p><a class="labbtn" href="#thuc-te/${meta.lab}">📊 Xem trên dữ liệu thật</a></p>` : "");
+  window.scrollTo(0, 0);
+}
+
+// ---------- routing ----------
+function route() {
+  const [v, arg] = (location.hash.slice(1) || "tong-quan").split("/");
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
+  document.querySelectorAll("#nav a").forEach(a => a.classList.toggle("on", a.dataset.v === v));
+  if (v === "quoc-gia") renderCountry();
+  if (v === "thuc-te") { if (arg && LABS[arg]) LAB = arg; renderLab(); }
+  if (v === "thu-vien") renderArticle(arg);
+}
+
+(async () => {
+  chartDefaults();
+  [D, LIB] = await Promise.all([fetch("data/macro.json").then(r => r.json()), fetch("content/index.json").then(r => r.json())]);
+  $("#upd").textContent = "Cập nhật dữ liệu: " + new Date(D.updated).toLocaleString("vi-VN");
+  renderOverview();
+  countryOptions($("#cSel")); countryOptions($("#lSel"));
+  $("#cSel").value = "AU"; $("#lSel").value = "AU";
+  $("#cSel").onchange = renderCountry; $("#lSel").onchange = renderLab;
+  rangeButtons($("#cRange"), renderCountry); rangeButtons($("#lRange"), renderLab);
+  $("#labTabs").onclick = e => { const k = e.target.dataset.lab; if (k) { LAB = k; history.replaceState(null, "", "#thuc-te/" + k); renderLab(); } };
+  window.addEventListener("hashchange", route);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { chartDefaults(); route(); });
+  route();
+})();
+</script>
+</body>
+</html>
