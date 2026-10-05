@@ -8,6 +8,7 @@ Nguồn:
   World Bank– tăng trưởng GDP, lạm phát theo năm (dùng cho Việt Nam và để bổ sung)
 Mỗi chuỗi lỗi riêng sẽ bị bỏ qua, không làm hỏng cả file.
 """
+import time
 import csv, io, json, re, datetime, urllib.request
 from pathlib import Path
 
@@ -204,9 +205,21 @@ def eurostat_unemployment():
 
 
 def ecb_10y():
-    """Lợi suất 10 năm khu vực Euro (ECB). Chuỗi OECD trên FRED bị trễ nhiều tháng."""
-    text = get(f"https://data-api.ecb.europa.eu/service/data/FM/M.U2.EUR.4F.BB.U2_10Y.YLD?startPeriod={START}&format=csvdata")
-    return [[r["TIME_PERIOD"], round(float(r["OBS_VALUE"]), 2)] for r in csv.DictReader(io.StringIO(text)) if r["OBS_VALUE"]]
+    """Lợi suất 10 năm khu vực Euro (ECB). Chuỗi OECD trên FRED bị trễ nhiều tháng.
+    ECB đôi khi từ chối/treo với máy chủ GitHub: thử lại 3 lần, rồi mới dùng FRED làm dự phòng."""
+    url = f"https://data-api.ecb.europa.eu/service/data/FM/M.U2.EUR.4F.BB.U2_10Y.YLD?startPeriod={START}&format=csvdata"
+    for attempt in range(3):
+        try:
+            text = get(url)
+            rows = [[r["TIME_PERIOD"], round(float(r["OBS_VALUE"]), 2)]
+                    for r in csv.DictReader(io.StringIO(text)) if r["OBS_VALUE"]]
+            if rows:
+                return rows
+        except Exception as e:
+            print(f"  ! ECB 10Y lần {attempt + 1}: {e}")
+        time.sleep(5 * (attempt + 1))
+    print("  ! ECB 10Y không phản hồi, dùng FRED (có thể trễ vài tháng)")
+    return fred("IRLTLT01EZM156N")
 
 
 def worldbank(country, indicator):
