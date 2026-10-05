@@ -235,6 +235,39 @@ def safe(label, fn, *args):
         return None
 
 
+CAL_CURRENCIES = {"USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CHF", "CNY"}
+
+
+def econ_calendar():
+    """Lịch kinh tế tuần này (Forex Factory). Chỉ giữ sự kiện ảnh hưởng Cao/Trung bình của các nền kinh tế trên trang."""
+    events = json.loads(get("https://nfs.faireconomy.media/ff_calendar_thisweek.json"))
+    return [{"date": e["date"], "cur": e["country"], "impact": e["impact"], "title": e["title"],
+             "forecast": e.get("forecast") or "", "previous": e.get("previous") or ""}
+            for e in events if e["impact"] in ("High", "Medium") and e["country"] in CAL_CURRENCIES]
+
+
+def crypto_data():
+    out = {}
+    for sym, series in (("BTC", "CBBTCUSD"), ("ETH", "CBETHUSD")):   # giá đóng cửa Coinbase hằng ngày
+        hist = safe(f"{sym} history", fred_raw, series)
+        if hist:
+            out[sym] = {"history": [[d, round(v, 2)] for d, v in hist if d >= "2017-01-01"],
+                        "ath": max(hist, key=lambda x: x[1])}
+    snap = safe("CoinGecko", lambda: json.loads(get(
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
+        "&include_24hr_change=true&include_market_cap=true")))
+    if snap:
+        for sym, cid in (("BTC", "bitcoin"), ("ETH", "ethereum")):
+            if sym in out and cid in snap:
+                out[sym].update(price=snap[cid]["usd"], change24h=round(snap[cid]["usd_24h_change"], 2),
+                                mcap=round(snap[cid]["usd_market_cap"]))
+    fng = safe("Fear&Greed", lambda: json.loads(get("https://api.alternative.me/fng/?limit=365"))["data"])
+    if fng:
+        out["fng"] = [[datetime.datetime.fromtimestamp(int(x["timestamp"]), datetime.timezone.utc).date().isoformat(),
+                       int(x["value"]), x["value_classification"]] for x in reversed(fng)]
+    return out
+
+
 def main():
     # BIS: gọi từng nước một (gộp nhiều nước trong một truy vấn hay bị treo)
     print("BIS…")
@@ -266,9 +299,17 @@ def main():
         data[cid] = {**{k: c[k] for k in ("name", "region", "target", "bank")},
                      "series": {k: v for k, v in s.items() if v}}
 
+    # Nguồn nào lỗi lần này (vd Forex Factory giới hạn số lần gọi) thì giữ dữ liệu của lần trước
+    try:
+        prev = json.loads(OUT.read_text("utf-8"))
+    except Exception:
+        prev = {}
+    calendar = safe("calendar", econ_calendar) or prev.get("calendar")
+    crypto = safe("crypto", crypto_data) or prev.get("crypto")
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"updated": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="minutes"),
-                               "countries": data, "fed": fed}, ensure_ascii=False, separators=(",", ":")))
+                               "countries": data, "fed": fed, "calendar": calendar, "crypto": crypto}, ensure_ascii=False, separators=(",", ":")))
     print("OK ->", OUT, OUT.stat().st_size // 1024, "KB")
 
 

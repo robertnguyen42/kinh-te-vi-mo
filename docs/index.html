@@ -86,6 +86,23 @@ input[type=range]{vertical-align:middle}
 .pbar span{display:block;height:100%}
 .legend-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px;vertical-align:middle}
 tr.past td{color:var(--muted)}
+.sig{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.sig div{border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px}
+.sig b{display:block;font-size:14px;margin-bottom:2px}
+.verdict{font-size:22px;font-weight:700;margin:4px 0 12px}
+.up{color:var(--ok)}.down{color:var(--hot)}
+.ev td,.ev th{white-space:normal;vertical-align:top;text-align:left}
+.ev th:nth-child(n+3){text-align:right}
+.ev td.num{text-align:right;white-space:nowrap}
+.imp{font-size:11px;padding:1px 7px;border-radius:99px;font-weight:600}
+.imp.High{background:var(--hot);color:#fff}.imp.Medium{background:var(--surface-2);color:var(--muted)}
+.scn{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.coins{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
+.coin .px{font-size:30px;font-weight:700;margin:2px 0}
+.coin .row{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.coin .row b{color:var(--text)}
+.fng{font-size:40px;font-weight:700;line-height:1}
+.disc{font-size:12px;color:var(--muted);border-left:3px solid var(--border);padding-left:10px;margin-top:12px}
 </style>
 </head>
 <body>
@@ -96,6 +113,7 @@ tr.past td{color:var(--muted)}
     <a href="#quoc-gia" data-v="quoc-gia">Quốc gia</a>
     <a href="#thuc-te" data-v="thuc-te"><span class="long">Lý thuyết ↔ </span>Thực tế</a>
     <a href="#fed" data-v="fed">🇺🇸 Fed<span class="long"> & M2</span></a>
+    <a href="#thi-truong" data-v="thi-truong">📅 Thị trường</a>
     <a href="#thu-vien" data-v="thu-vien">Thư viện<span class="long"> lý thuyết</span></a>
   </nav>
 </div></header>
@@ -149,6 +167,33 @@ tr.past td{color:var(--muted)}
     </div>
     <div class="card"><h3>Bảng cân đối kế toán của Fed (QE / QT)</h3><p class="note">Tổng tài sản, nghìn tỷ USD, hằng tuần. Tăng = Fed in tiền mua tài sản (QE); giảm = rút tiền về (QT). <a href="#thu-vien/bang-can-doi-fed">Đọc thêm →</a></p><div class="chart" style="height:320px"><canvas id="fch4"></canvas></div></div>
     <div class="card tbl"><h3>Các lần điều chỉnh gần nhất</h3><table id="fMoves"></table></div>
+  </section>
+
+  <section class="view" id="v-thi-truong">
+    <h2>Thị trường: sự kiện sắp tới & crypto</h2>
+    <p class="sub">Nhận định ở đây được tính tự động theo quy tắc từ dữ liệu, mục đích là học cách thị trường phản ứng. <b>Không phải lời khuyên đầu tư.</b> <a href="#thu-vien/doc-lich-kinh-te">Cách đọc lịch kinh tế →</a></p>
+
+    <div class="card">
+      <h3>🌡️ Nhiệt kế thị trường (cổ phiếu & crypto)</h3>
+      <div class="verdict" id="mVerdict"></div>
+      <div class="sig" id="mSignals"></div>
+      <p class="disc">Cách tính: mỗi tín hiệu +1 (thuận lợi), 0 (trung tính) hoặc −1 (bất lợi) cho tài sản rủi ro. Tổng ≥ +2 = nghiêng về tăng, ≤ −2 = nghiêng về giảm. Đây là bức tranh <i>bối cảnh</i>, không dự báo được biến động ngắn hạn.</p>
+    </div>
+
+    <div class="card tbl">
+      <h3>📅 Sự kiện kinh tế sắp tới</h3>
+      <p class="note">Giờ Việt Nam. Nguồn: Forex Factory (tuần này, mức ảnh hưởng Cao/Trung bình) + lịch họp FOMC. Mỗi sự kiện có kịch bản: số liệu ra <b>cao hơn</b> hoặc <b>thấp hơn</b> dự báo thì thị trường thường phản ứng thế nào.</p>
+      <table class="ev" id="evTbl"></table>
+    </div>
+
+    <h2 style="margin-top:28px">₿ Bitcoin & Ethereum</h2>
+    <p class="sub" id="cSrc"></p>
+    <div class="coins" id="coins"></div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h3>Giá lịch sử</h3><div class="controls"><select id="coinSel"><option value="BTC">Bitcoin</option><option value="ETH">Ethereum</option></select><span id="coinRange"></span><label><input type="checkbox" id="coinLog"> Thang log</label></div><div class="chart" style="height:320px"><canvas id="cch1"></canvas></div><p class="note">Đường đứt nét = trung bình 200 ngày (MA200), mốc phân biệt xu hướng tăng/giảm dài hạn phổ biến nhất.</p></div>
+      <div class="card"><h3>Chỉ số Sợ hãi & Tham lam (Crypto)</h3><div id="fngNow"></div><div class="chart" style="height:250px"><canvas id="cch2"></canvas></div></div>
+    </div>
+    <div class="card"><h3>Bitcoin & thanh khoản của Fed</h3><p class="note">Giá BTC (thang log, trái) và tổng tài sản của Fed (phải). Crypto là tài sản rất nhạy với thanh khoản: QE 2020–21 đi cùng đợt tăng mạnh nhất. <a href="#thu-vien/bitcoin-vi-mo">Đọc thêm →</a></p><div class="chart" style="height:320px"><canvas id="cch3"></canvas></div></div>
   </section>
 
   <section class="view" id="v-thu-vien">
@@ -440,6 +485,174 @@ function renderFomc(F, today) {
 const ymdAdd = (d, n) => { const t = new Date(d); t.setDate(t.getDate() + n); return t.toISOString().slice(0, 10); };
 $("#fLag") && ($("#fLag").onchange = () => renderFed());
 
+// ---------- Thị trường: nhiệt kế, sự kiện, crypto ----------
+const CUR = {USD: ["US", "🇺🇸"], EUR: ["XM", "🇪🇺"], GBP: ["GB", "🇬🇧"], JPY: ["JP", "🇯🇵"], AUD: ["AU", "🇦🇺"], NZD: ["NZ", "🇳🇿"], CHF: ["CH", "🇨🇭"], CNY: ["CN", "🇨🇳"]};
+// [mẫu tiêu đề, tên tiếng Việt, loại]. Loại quyết định cách diễn giải số liệu cao hơn dự báo.
+const EVENT_TYPES = [
+  [/Core CPI/i, "CPI lõi", "infl"], [/CPI|Consumer Price/i, "Lạm phát CPI", "infl"], [/PPI|Producer Price/i, "Giá sản xuất PPI", "infl"],
+  [/PCE Price/i, "Lạm phát PCE", "infl"], [/Inflation Expectations/i, "Kỳ vọng lạm phát", "infl"], [/Average (Hourly )?Earnings|Wage/i, "Tăng lương", "infl"],
+  [/Non-Farm|NFP/i, "Bảng lương phi nông nghiệp (NFP)", "jobs"], [/ADP/i, "Việc làm ADP", "jobs"], [/JOLTS/i, "Số việc làm trống JOLTS", "jobs"],
+  [/Employment Change/i, "Thay đổi việc làm", "jobs"], [/Unemployment Claims|Jobless/i, "Đơn trợ cấp thất nghiệp", "jobs_inv"],
+  [/Unemployment Rate/i, "Tỷ lệ thất nghiệp", "jobs_inv"], [/ISM Services/i, "PMI dịch vụ ISM", "growth"], [/ISM Manufacturing/i, "PMI sản xuất ISM", "growth"],
+  [/PMI/i, "Chỉ số PMI", "growth"], [/Retail Sales/i, "Doanh số bán lẻ", "growth"], [/GDP/i, "Tăng trưởng GDP", "growth"],
+  [/Sentiment|Confidence/i, "Niềm tin tiêu dùng", "growth"], [/Industrial Production/i, "Sản xuất công nghiệp", "growth"], [/Trade Balance/i, "Cán cân thương mại", "growth"],
+  [/Minutes/i, "Biên bản họp", "cb_talk"], [/Speaks|Testifies|Press Conference/i, "Phát biểu", "cb_talk"], [/Statement|Outlook Report|Monetary Policy/i, "Tuyên bố chính sách", "cb_talk"],
+  [/Rate Decision|Funds Rate|Cash Rate|Bank Rate|Refinancing Rate|Policy Rate|Interest Rate/i, "Quyết định lãi suất", "cb_rate"],
+];
+const hot = id => { const c = D.countries[id]; const p = c && last(c.series.cpi); return p ? p[1] > c.target + 0.5 : false; };
+const num = v => { const m = String(v).match(/-?[\d.]+/); if (!m) return null; let x = +m[0]; if (/K$/i.test(v)) x *= 1e3; if (/M$/i.test(v)) x *= 1e6; if (/B$/i.test(v)) x *= 1e9; return x; };
+const UP = '<b class="up">▲</b>', DN = '<b class="down">▼</b>';
+function analyze(e) {
+  const [cid, flag] = CUR[e.cur] || [null, "🌐"];
+  const [, vn, type] = EVENT_TYPES.find(([re]) => re.test(e.title)) || [null, null, "other"];
+  const isHot = cid && hot(cid);
+  const risk = e.cur === "USD" ? "Chứng khoán Mỹ & crypto" : `Chứng khoán ${D.countries[cid]?.name || e.cur}`;
+  const fx = e.cur;
+  let above = "", below = "", ctx = "";
+  if (type === "infl") {
+    above = `Lạm phát nóng hơn → lo ngại lãi suất cao lâu hơn → ${risk} ${DN} · ${fx} ${UP}`;
+    below = `Lạm phát hạ nhiệt → kỳ vọng nới lỏng → ${risk} ${UP} · ${fx} ${DN}`;
+  } else if (type === "jobs" || type === "jobs_inv") {
+    const strongUp = type === "jobs";   // số cao = thị trường lao động mạnh (jobs) hay yếu (jobs_inv)
+    const strong = isHot ? `Lao động mạnh → NHTW khó hạ lãi suất → ${risk} ${DN} · ${fx} ${UP}` : `Lao động mạnh → kinh tế khỏe → ${risk} ${UP} · ${fx} ${UP}`;
+    const weak = isHot ? `Lao động yếu đi → tăng khả năng nới lỏng → ${risk} ${UP} · ${fx} ${DN}` : `Lao động yếu → lo ngại suy thoái → ${risk} ${DN} · ${fx} ${DN}`;
+    [above, below] = strongUp ? [strong, weak] : [weak, strong];
+    if (isHot) ctx = "Lạm phát đang trên mục tiêu: \"tin tốt là tin xấu\". Số liệu mạnh khiến thị trường lo lãi suất.";
+  } else if (type === "growth") {
+    above = `Kinh tế mạnh hơn dự kiến → ${risk} ${UP} · ${fx} ${UP}` + (isHot ? " (nhưng có thể làm tăng lo ngại lãi suất)" : "");
+    below = `Kinh tế yếu hơn → ${risk} ${DN} · ${fx} ${DN}` + (isHot ? " (dù có thể thúc đẩy kỳ vọng hạ lãi suất)" : "");
+  } else if (type === "cb_rate") {
+    above = `Lãi suất cao hơn dự kiến (diều hâu) → ${risk} ${DN} · ${fx} ${UP}`;
+    below = `Lãi suất thấp hơn dự kiến (bồ câu) → ${risk} ${UP} · ${fx} ${DN}`;
+  } else if (type === "cb_talk") {
+    above = `Giọng điệu <b>diều hâu</b> (ủng hộ thắt chặt) → ${risk} ${DN} · ${fx} ${UP}`;
+    below = `Giọng điệu <b>bồ câu</b> (ủng hộ nới lỏng) → ${risk} ${UP} · ${fx} ${DN}`;
+  }
+  const f = num(e.forecast), pv = num(e.previous);
+  if (f != null && pv != null && f !== pv) ctx = `Dự báo ${f > pv ? "cao hơn" : "thấp hơn"} kỳ trước (${e.forecast} so với ${e.previous}). ` + ctx;
+  return {flag, vn, type, above, below, ctx, talk: type.startsWith("cb_talk")};
+}
+const vnTime = d => new Date(d).toLocaleString("vi-VN", {timeZone: "Asia/Ho_Chi_Minh", weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
+
+function marketSignals() {
+  const us = D.countries.US.series, F = D.fed, C = D.crypto || {}, out = [];
+  const today = new Date().toISOString().slice(0, 10);
+  const nm = (F.market || []).find(m => m.date >= today);
+  if (nm) {
+    const p = nm.probs, up = (p["25"] || 0) + (p["50"] || 0), dn = (p["-25"] || 0) + (p["-50"] || 0), d = up - dn;
+    out.push({name: `Fed họp ${vnDate(nm.date)}`, v: d > 0.3 ? -1 : d < -0.3 ? 1 : 0, txt: `Tăng ${Math.round(up * 100)}% · Giữ ${Math.round((p["0"] || 0) * 100)}% · Giảm ${Math.round(dn * 100)}% (Kalshi)`});
+  }
+  const cpi = us.cpi, n = cpi.length;
+  if (n > 3) { const d = cpi[n - 1][1] - cpi[n - 4][1]; out.push({name: "Xu hướng lạm phát Mỹ (3 tháng)", v: d > 0.2 ? -1 : d < -0.2 ? 1 : 0, txt: `CPI ${f1(cpi[n - 4][1])}% → ${f1(cpi[n - 1][1])}% (${d > 0 ? "đang tăng" : "đang giảm"})`}); }
+  const y10 = last(us.y10), y2 = last(us.y2);
+  if (y10 && y2) { const sp = y10[1] - y2[1]; out.push({name: "Đường cong lợi suất Mỹ (10Y − 2Y)", v: sp < 0 ? -1 : 0, txt: `${sign(sp)} điểm % ${sp < 0 ? "· đảo ngược, cảnh báo suy thoái" : "· dốc lên bình thường"}`}); }
+  const m2 = last(us.m2_yoy);
+  if (m2) out.push({name: "Cung tiền M2 Mỹ", v: m2[1] > 5 ? 1 : m2[1] < 0 ? -1 : 0, txt: `${sign(m2[1])}% so với cùng kỳ ${m2[1] > 5 ? "· thanh khoản dồi dào" : m2[1] < 0 ? "· thanh khoản co lại" : "· bình thường"}`});
+  const bal = F.balance;
+  if (bal && bal.length > 13) { const d = bal[bal.length - 1][1] - bal[bal.length - 14][1]; out.push({name: "Bảng cân đối Fed (13 tuần)", v: d > 0.05 ? 1 : d < -0.05 ? -1 : 0, txt: `${d >= 0 ? "+" : ""}${Math.round(d * 1000)} tỷ USD ${d > 0.05 ? "· đang bơm thanh khoản" : d < -0.05 ? "· đang rút thanh khoản" : "· đi ngang"}`}); }
+  if (C.BTC) { const h = C.BTC.history, ma = avg(h.slice(-200).map(x => x[1])), px = C.BTC.livePrice || C.BTC.price || last(h)[1]; out.push({name: "Xu hướng Bitcoin (so với MA200)", v: px > ma ? 1 : -1, txt: `Giá ${usd(px)} ${px > ma ? "trên" : "dưới"} MA200 ${usd(ma)} (${sign((px / ma - 1) * 100)}%)`}); }
+  if (C.fng) { const v = last(C.fng)[1]; out.push({name: "Tâm lý crypto (Sợ hãi & Tham lam)", v: v > 75 ? -1 : v < 25 ? 1 : 0, txt: `${v}/100 · ${FNG_VN(v)}${v > 75 ? " · quá hưng phấn, dễ điều chỉnh" : v < 25 ? " · sợ hãi cực độ, thường là vùng tích lũy" : ""}`}); }
+  return out;
+}
+const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+const usd = v => "$" + (v >= 1000 ? Math.round(v).toLocaleString("en-US") : v.toFixed(2));
+const FNG_VN = v => v <= 24 ? "Sợ hãi tột độ" : v <= 44 ? "Sợ hãi" : v <= 55 ? "Trung lập" : v <= 75 ? "Tham lam" : "Tham lam tột độ";
+
+let COIN_YEARS = 3;
+function renderMarket() {
+  // Nhiệt kế
+  const sig = marketSignals(), total = sig.reduce((a, x) => a + x.v, 0);
+  const icon = v => v > 0 ? '<span class="up">▲ Thuận lợi</span>' : v < 0 ? '<span class="down">▼ Bất lợi</span>' : '<span class="d" style="display:inline">● Trung tính</span>';
+  $("#mVerdict").innerHTML = total >= 2 ? `<span class="up">Nghiêng về TĂNG</span> <span class="d" style="display:inline">(điểm ${sign(total).replace(".00", "")})</span>` : total <= -2 ? `<span class="down">Nghiêng về GIẢM</span> <span class="d" style="display:inline">(điểm ${total})</span>` : `Giằng co / trung tính <span class="d" style="display:inline">(điểm ${total})</span>`;
+  $("#mSignals").innerHTML = sig.map(x => `<div><b>${x.name}</b>${icon(x.v)}<br>${x.txt}</div>`).join("");
+
+  // Sự kiện: tuần này (Forex Factory) + các cuộc họp FOMC sắp tới
+  const now = new Date();
+  const evs = [...(D.calendar || [])];
+  const fomcInCal = evs.some(e => /FOMC Statement|Federal Funds Rate/i.test(e.title));
+  (D.fed.calendar || []).filter(m => new Date(m.date + "T18:00:00Z") >= now).slice(0, 2).forEach(m => {
+    if (fomcInCal && evs.some(e => e.date.slice(0, 10) === m.date)) return;
+    const p = (D.fed.market || []).find(x => x.date === m.date)?.probs;
+    evs.push({date: m.date + "T14:00:00-04:00", cur: "USD", impact: "High", title: "Federal Funds Rate", forecast: "", previous: `${f1(D.fed.now.upper)}%`, fomc: p});
+  });
+  evs.sort((a, b) => new Date(a.date) - new Date(b.date));
+  $("#evTbl").innerHTML = `<thead><tr><th>Thời gian</th><th>Sự kiện</th><th>Dự báo</th><th>Kỳ trước</th></tr></thead><tbody>` + (evs.length ? evs.map(e => {
+    const a = analyze(e), past = new Date(e.date) < now;
+    let bias = "";
+    if (e.fomc) {
+      const up = (e.fomc["25"] || 0) + (e.fomc["50"] || 0), dn = (e.fomc["-25"] || 0) + (e.fomc["-50"] || 0), hold = e.fomc["0"] || 0;
+      const top = up > hold && up > dn ? `<b class="down">tăng lãi suất (${Math.round(up * 100)}%)</b>: bất lợi cho cổ phiếu & crypto nếu xảy ra; phần lớn đã được "định giá" nên bất ngờ mới là điều quan trọng` : dn > hold ? `<b class="up">giảm lãi suất (${Math.round(dn * 100)}%)</b>` : `<b>giữ nguyên (${Math.round(hold * 100)}%)</b>; nếu Fed tăng bất ngờ (${Math.round(up * 100)}%) thị trường dễ giảm mạnh`;
+      bias = `<div class="scn">🎯 Thị trường đang đặt cược ${top}.</div>`;
+    }
+    const scn = a.above ? (a.talk ? `<div class="scn">${a.above}<br>${a.below}</div>` : `<div class="scn">Cao hơn dự báo: ${a.above}<br>Thấp hơn dự báo: ${a.below}</div>`) : "";
+    return `<tr class="${past ? "past" : ""}"><td>${vnTime(e.date)}${past ? '<span class="d">đã diễn ra</span>' : ""}</td>
+      <td>${a.flag} <b>${a.vn ? a.vn + (a.vn === "Phát biểu" || a.vn === "Biên bản họp" ? ": " + e.title : "") : e.title}</b> <span class="imp ${e.impact}">${e.impact === "High" ? "Cao" : "TB"}</span>${a.vn && !/Phát biểu|Biên bản/.test(a.vn) ? `<span class="d">${e.title}</span>` : ""}
+        ${a.ctx ? `<div class="scn">ℹ️ ${a.ctx}</div>` : ""}${bias}${scn}</td>
+      <td class="num">${e.forecast || "—"}</td><td class="num">${e.previous || "—"}</td></tr>`;
+  }).join("") : `<tr><td colspan="4">Chưa tải được lịch sự kiện tuần này.</td></tr>`) + "</tbody>";
+
+  renderCrypto();
+}
+
+function renderCrypto() {
+  const C = D.crypto || {};
+  $("#coins").innerHTML = ["BTC", "ETH"].filter(k => C[k]).map(k => {
+    const c = C[k], h = c.history, px = c.livePrice || c.price || last(h)[1];
+    const back = days => { const d = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10); const x = [...h].reverse().find(r => r[0] <= d); return x ? (px / x[1] - 1) * 100 : null; };
+    const pct = v => v == null ? "—" : `<b class="${v >= 0 ? "up" : "down"}">${sign(v)}%</b>`;
+    const ch24 = c.liveChange ?? c.change24h;
+    return `<div class="card coin"><h3>${k === "BTC" ? "₿ Bitcoin" : "Ξ Ethereum"} <span class="d" style="display:inline">${k}</span></h3>
+      <div class="px">${usd(px)}</div>
+      <div class="row"><span>24h ${pct(ch24)}</span><span>7 ngày ${pct(back(7))}</span><span>30 ngày ${pct(back(30))}</span><span>1 năm ${pct(back(365))}</span></div>
+      <div class="row" style="margin-top:6px"><span>Đỉnh lịch sử <b>${usd(c.ath[1])}</b> (${vnDate(c.ath[0])})</span><span>Cách đỉnh ${pct((px / c.ath[1] - 1) * 100)}</span>${c.mcap ? `<span>Vốn hóa <b>${(c.mcap / 1e9).toFixed(0)} tỷ $</b></span>` : ""}</div></div>`;
+  }).join("");
+  $("#cSrc").innerHTML = `Giá ${C.live ? "trực tiếp từ CoinGecko lúc " + new Date().toLocaleTimeString("vi-VN") : "lúc cập nhật dữ liệu gần nhất"}; lịch sử: giá đóng cửa Coinbase hằng ngày (FRED).`;
+
+  // Giá lịch sử + MA200
+  const k = $("#coinSel").value, c = C[k];
+  if (c) {
+    const h = c.history, start = new Date(Date.now() - COIN_YEARS * 365 * 864e5).toISOString().slice(0, 10);
+    const ma = h.map((x, i) => i >= 199 ? [x[0], avg(h.slice(i - 199, i + 1).map(y => y[1]))] : null).filter(Boolean);
+    const L = h.map(x => x[0]).filter(d => d >= start);
+    $("#coinRange").innerHTML = [1, 3, 10].map(y => `<button data-cy="${y}" class="${y === COIN_YEARS ? "on" : ""}">${y === 10 ? "Từ 2017" : y + " năm"}</button>`).join(" ");
+    draw("cch1", {type: "line", data: {labels: L, datasets: [line(`Giá ${k}`, h, L, css("--s1"), {borderWidth: 1.5}), line("MA200", ma, L, css("--s2"), {borderDash: [5, 3], borderWidth: 1.5})]},
+      options: {plugins: {legend: {labels: {boxWidth: 12, usePointStyle: true}}, tooltip: {callbacks: {label: t => `${t.dataset.label}: ${usd(t.parsed.y)}`}}},
+        scales: {x: {ticks: {maxTicksLimit: 8, maxRotation: 0}, grid: {display: false}}, y: {type: $("#coinLog").checked ? "logarithmic" : "linear", ticks: {callback: v => usd(+v)}}}}});
+  }
+  // Fear & Greed
+  if (C.fng) {
+    const v = last(C.fng);
+    const col = v[1] > 55 ? "--ok" : v[1] < 45 ? "--hot" : "--muted";
+    $("#fngNow").innerHTML = `<div class="stat"><div><span class="fng" style="color:var(${col})">${v[1]}</span><b>${FNG_VN(v[1])}</b></div><div>Hôm qua<b>${C.fng[C.fng.length - 2]?.[1] ?? "—"}</b></div><div>30 ngày trước<b>${C.fng[C.fng.length - 31]?.[1] ?? "—"}</b></div></div>`;
+    const L = C.fng.map(x => x[0]);
+    draw("cch2", {type: "line", data: {labels: L, datasets: [line("Chỉ số", C.fng.map(x => [x[0], x[1]]), L, css("--s4"), {borderWidth: 1.5}),
+      line("Tham lam tột độ (75)", L.map(l => [l, 75]), L, css("--ok"), {borderWidth: 1, borderDash: [3, 3], isRef: true}),
+      line("Sợ hãi tột độ (25)", L.map(l => [l, 25]), L, css("--hot"), {borderWidth: 1, borderDash: [3, 3], isRef: true})]},
+      options: {scales: {x: {ticks: {maxTicksLimit: 6, maxRotation: 0}, grid: {display: false}}, y: {min: 0, max: 100}}}});
+  }
+  // BTC & bảng cân đối Fed (theo tuần)
+  if (C.BTC && D.fed.balance) {
+    const px = new Map(C.BTC.history), bal = D.fed.balance.filter(x => x[0] >= "2017-01-01");
+    const near = d => { for (let i = 0; i < 5; i++) { const k = ymdAdd(d, -i); if (px.has(k)) return px.get(k); } return null; };
+    const L = bal.map(x => x[0]);
+    draw("cch3", {type: "line", data: {labels: L, datasets: [
+      Object.assign(line("Bitcoin ($)", L.map(d => [d, near(d)]), L, css("--s2")), {yAxisID: "y"}),
+      Object.assign(line("Tài sản của Fed (nghìn tỷ $)", bal, L, css("--s4")), {yAxisID: "y1"})]},
+      options: {plugins: {tooltip: {callbacks: {label: t => t.dataset.yAxisID === "y" ? `BTC: ${usd(t.parsed.y)}` : `Fed: ${t.parsed.y.toFixed(2)}T`}}},
+        scales: {x: {ticks: {maxTicksLimit: 8, maxRotation: 0, callback: function (v) { return this.getLabelForValue(v).slice(0, 7); }}, grid: {display: false}},
+          y: {type: "logarithmic", position: "left", ticks: {callback: v => [1e3, 3e3, 1e4, 3e4, 1e5].includes(+v) ? usd(+v) : ""}}, y1: {position: "right", grid: {display: false}, ticks: {callback: v => v + "T"}}}}});
+  }
+}
+// Giá trực tiếp từ CoinGecko (nếu bị chặn thì dùng giá trong macro.json)
+async function liveCrypto() {
+  try {
+    const r = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true&include_market_cap=true").then(r => r.json());
+    for (const [k, id] of [["BTC", "bitcoin"], ["ETH", "ethereum"]]) if (D.crypto[k] && r[id]) Object.assign(D.crypto[k], {livePrice: r[id].usd, liveChange: r[id].usd_24h_change, mcap: r[id].usd_market_cap});
+    D.crypto.live = true;
+    if (location.hash.startsWith("#thi-truong")) renderMarket();
+  } catch (e) { /* giữ giá đã lưu */ }
+}
+
 // ---------- library ----------
 function mdRender(md) {
   const math = [];
@@ -469,6 +682,7 @@ function route() {
   if (v === "thuc-te") { if (arg && LABS[arg]) LAB = arg; renderLab(); }
   if (v === "thu-vien") renderArticle(arg);
   if (v === "fed") renderFed();
+  if (v === "thi-truong") renderMarket();
 }
 
 (async () => {
@@ -482,6 +696,9 @@ function route() {
   rangeButtons($("#cRange"), renderCountry); rangeButtons($("#lRange"), renderLab);
   $("#labTabs").onclick = e => { const k = e.target.dataset.lab; if (k) { LAB = k; history.replaceState(null, "", "#thuc-te/" + k); renderLab(); } };
   window.addEventListener("hashchange", route);
+  $("#coinSel").onchange = renderCrypto; $("#coinLog").onchange = renderCrypto;
+  $("#coinRange").onclick = e => { const y = +e.target.dataset.cy; if (y) { COIN_YEARS = y; renderCrypto(); } };
+  if (D.crypto) liveCrypto();
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { chartDefaults(); route(); });
   route();
 })();

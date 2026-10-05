@@ -65,5 +65,17 @@
     "id": "bo-ba-bat-kha-thi",
     "title": "Bộ ba bất khả thi",
     "group": "Kinh tế quốc tế"
+  },
+  {
+    "id": "doc-lich-kinh-te",
+    "title": "Cách đọc lịch kinh tế",
+    "group": "Thị trường",
+    "page": "thi-truong"
+  },
+  {
+    "id": "bitcoin-vi-mo",
+    "title": "Bitcoin & Ethereum dưới góc nhìn vĩ mô",
+    "group": "Thị trường",
+    "page": "thi-truong"
   }
 ]
