@@ -65,6 +65,10 @@ button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .card .note{color:var(--muted);font-size:13px;margin:0 0 10px}
 .lib{display:grid;grid-template-columns:240px 1fr;gap:24px}
 @media (max-width:760px){.lib{grid-template-columns:1fr}}
+.empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:14px;background:var(--surface-2);border-radius:8px;padding:16px}
+#tocSel{display:none;width:100%;margin-bottom:12px}
+@media (max-width:760px){.toc{display:none}#tocSel{display:block}nav a{padding:8px 6px;font-size:13px}nav .long{display:none}}
+@media (min-width:761px){nav .short{display:none}}
 .toc a{display:block;padding:6px 10px;border-radius:6px;color:var(--text);text-decoration:none;font-size:14px}
 .toc a.on{background:var(--surface-2);font-weight:600}
 .toc .g{font-size:11px;text-transform:uppercase;color:var(--muted);margin:14px 10px 4px;letter-spacing:.05em}
@@ -90,9 +94,9 @@ tr.past td{color:var(--muted)}
   <nav id="nav">
     <a href="#tong-quan" data-v="tong-quan">Tổng quan</a>
     <a href="#quoc-gia" data-v="quoc-gia">Quốc gia</a>
-    <a href="#thuc-te" data-v="thuc-te">Lý thuyết ↔ Thực tế</a>
-    <a href="#fed" data-v="fed">🇺🇸 Fed & M2</a>
-    <a href="#thu-vien" data-v="thu-vien">Thư viện lý thuyết</a>
+    <a href="#thuc-te" data-v="thuc-te"><span class="long">Lý thuyết ↔ </span>Thực tế</a>
+    <a href="#fed" data-v="fed">🇺🇸 Fed<span class="long"> & M2</span></a>
+    <a href="#thu-vien" data-v="thu-vien">Thư viện<span class="long"> lý thuyết</span></a>
   </nav>
 </div></header>
 
@@ -148,7 +152,7 @@ tr.past td{color:var(--muted)}
   </section>
 
   <section class="view" id="v-thu-vien">
-    <div class="lib"><div class="toc" id="toc"></div><article id="art"></article></div>
+    <div class="lib"><div><select id="tocSel" aria-label="Chọn bài"></select><div class="toc" id="toc"></div></div><article id="art"></article></div>
   </section>
 </main>
 
@@ -188,13 +192,20 @@ function chartDefaults() {
 }
 function draw(id, cfg) {
   if (charts[id]) charts[id].destroy();
+  charts[id] = null;
   cfg.options = Object.assign({
     responsive: true, maintainAspectRatio: false, animation: false,
     interaction: {mode: "index", intersect: false},
     plugins: {legend: {labels: {boxWidth: 12, usePointStyle: true}}, tooltip: {callbacks: {label: c => `${c.dataset.label}: ${f1(c.parsed.y)}`}}},
     scales: {x: {ticks: {maxTicksLimit: 8, maxRotation: 0}, grid: {display: false}}, y: {ticks: {callback: v => v + "%"}}}
   }, cfg.options || {});
-  charts[id] = new Chart($("#" + id), cfg);
+  // Nước không có dữ liệu cho biểu đồ này: hiện thông báo thay vì trục trống
+  const canvas = $("#" + id), box = canvas.parentElement;
+  const points = cfg.data.datasets.filter(d => !d.isRef).reduce((a, d) => a + d.data.filter(v => v != null).length, 0);
+  box.querySelector(".empty")?.remove();
+  canvas.style.display = points ? "" : "none";
+  if (!points) { box.insertAdjacentHTML("beforeend", `<div class="empty">${cfg.emptyText || "Chưa có dữ liệu cho nước này từ các nguồn miễn phí."}</div>`); charts[id] = null; return; }
+  charts[id] = new Chart(canvas, cfg);
 }
 const line = (label, s, labels, color, extra = {}) => {
   const m = new Map(s || []);
@@ -254,7 +265,7 @@ function renderCountry() {
   draw("ch1", {type: "line", data: {labels: L, datasets: [
     line("Lãi suất điều hành", s.rate, L, css("--s1"), {stepped: true}),
     line("Lạm phát (y/y)", s.cpi, L, css("--s2")),
-    line("Mục tiêu", L.map(l => [l, c.target]), L, css("--muted"), {borderDash: [4, 4], borderWidth: 1})
+    line("Mục tiêu", L.map(l => [l, c.target]), L, css("--muted"), {borderDash: [4, 4], borderWidth: 1, isRef: true})
   ]}});
   draw("ch2", {type: "line", data: {labels: L, datasets: s.y10 ? [line("Lợi suất 10 năm", s.y10, L, css("--s4")), line("Lãi suất điều hành", s.rate, L, css("--s1"), {stepped: true, borderWidth: 1})] : []}});
   draw("ch3", {type: "line", data: {labels: L, datasets: s.une ? [line("Thất nghiệp", s.une, L, css("--s3"))] : []}});
@@ -301,7 +312,7 @@ function renderLab() {
     $("#lNote").textContent = "Dưới 0 = chính sách thực chất đang kích thích";
     draw("lch", {type: "line", data: {labels: L, datasets: rr ? [
       line("Lãi suất thực", rr, L, css("--s1"), {fill: {target: {value: 0}, above: css("--s1") + "33", below: css("--s2") + "44"}}),
-      line("0", L.map(l => [l, 0]), L, css("--muted"), {borderWidth: 1, borderDash: [3, 3]}),
+      line("0", L.map(l => [l, 0]), L, css("--muted"), {borderWidth: 1, borderDash: [3, 3], isRef: true}),
     ] : []}});
     const v = last(rr || []);
     read.innerHTML = v ? `<h3>Đọc kết quả</h3><p>Lãi suất thực hiện tại của ${c.name}: <b class="${v[1] < 0 ? "hot" : ""}">${f1(v[1])}%</b> (${v[0]}). ${v[1] < 0 ? "Âm: người gửi tiết kiệm mất sức mua, vay mượn được khuyến khích." : v[1] > 1.5 ? "Dương khá cao: chính sách đang kìm hãm, có lợi cho người gửi tiết kiệm." : "Gần vùng trung lập (0–1.5%)."}</p>` : `<p>Thiếu dữ liệu.</p>`;
@@ -321,7 +332,7 @@ function renderLab() {
     $("#lNote").textContent = "Dưới 0 = đường cong đảo ngược, tín hiệu cảnh báo suy thoái";
     draw("lch", {type: "line", data: {labels: L, datasets: sp.length ? [
       line("Chênh lệch kỳ hạn", sp, L, css("--s4"), {fill: {target: {value: 0}, above: css("--s4") + "33", below: css("--s2") + "55"}}),
-      line("0", L.map(l => [l, 0]), L, css("--muted"), {borderWidth: 1, borderDash: [3, 3]}),
+      line("0", L.map(l => [l, 0]), L, css("--muted"), {borderWidth: 1, borderDash: [3, 3], isRef: true}),
     ] : []}});
     const v = last(sp);
     read.innerHTML = v ? `<h3>Đọc kết quả</h3><p>Chênh lệch hiện tại: <b class="${v[1] < 0 ? "hot" : ""}">${sign(v[1])} điểm %</b> (${v[0]}). ${v[1] < 0 ? "Đảo ngược: thị trường kỳ vọng ngân hàng trung ương sẽ phải hạ lãi suất." : "Dốc lên: trạng thái bình thường."}</p>` : `<p>${c.name} chưa có dữ liệu lợi suất 10 năm.</p>`;
@@ -440,6 +451,9 @@ async function renderArticle(id) {
   id = id || LIB[0].id;
   let g = "";
   $("#toc").innerHTML = LIB.map(a => { const head = a.group !== g ? `<div class="g">${(g = a.group)}</div>` : ""; return head + `<a href="#thu-vien/${a.id}" class="${a.id === id ? "on" : ""}">${a.title}</a>`; }).join("");
+  g = "";
+  $("#tocSel").innerHTML = LIB.map(a => { const head = a.group !== g ? `${g ? "</optgroup>" : ""}<optgroup label="${(g = a.group)}">` : ""; return head + `<option value="${a.id}" ${a.id === id ? "selected" : ""}>${a.title}</option>`; }).join("") + "</optgroup>";
+  $("#tocSel").onchange = e => location.hash = "thu-vien/" + e.target.value;
   const meta = LIB.find(a => a.id === id);
   const md = await fetch(`content/${id}.md`).then(r => r.text());
   $("#art").innerHTML = mdRender(md) + (meta && (meta.lab || meta.page) ? `<p><a class="labbtn" href="#${meta.page || "thuc-te/" + meta.lab}">📊 Xem trên dữ liệu thật</a></p>` : "");

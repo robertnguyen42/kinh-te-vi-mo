@@ -20,7 +20,7 @@ COUNTRIES = {
     "US": dict(name="Mỹ", region="Bắc Mỹ", bis=None, y10=None, une=None, wb="USA", target=2.0, bank="Fed"),
     "AU": dict(name="Úc", region="Châu Úc", bis="AU", y10="IRLTLT01AUM156N", une="AUS", wb="AUS", target=2.5, bank="RBA"),
     "NZ": dict(name="New Zealand", region="Châu Úc", bis="NZ", y10="IRLTLT01NZM156N", une="NZL", wb="NZL", target=2.0, bank="RBNZ"),
-    "XM": dict(name="Khu vực Euro", region="Châu Âu", bis="XM", y10="IRLTLT01EZM156N", une="EUROSTAT", wb="EMU", target=2.0, bank="ECB"),
+    "XM": dict(name="Khu vực Euro", region="Châu Âu", bis="XM", y10="ECB", une="EUROSTAT", wb="EMU", target=2.0, bank="ECB"),
     "DE": dict(name="Đức", region="Châu Âu", bis=None, y10="IRLTLT01DEM156N", une="DEU", wb="DEU", target=2.0, bank="ECB"),
     "GB": dict(name="Anh", region="Châu Âu", bis="GB", y10="IRLTLT01GBM156N", une="GBR", wb="GBR", target=2.0, bank="BoE"),
     "CH": dict(name="Thụy Sĩ", region="Châu Âu", bis="CH", y10="IRLTLT01CHM156N", une=None, wb="CHE", target=1.0, bank="SNB"),
@@ -203,6 +203,12 @@ def eurostat_unemployment():
     return sorted([times[int(i)], v] for i, v in d["value"].items())
 
 
+def ecb_10y():
+    """Lợi suất 10 năm khu vực Euro (ECB). Chuỗi OECD trên FRED bị trễ nhiều tháng."""
+    text = get(f"https://data-api.ecb.europa.eu/service/data/FM/M.U2.EUR.4F.BB.U2_10Y.YLD?startPeriod={START}&format=csvdata")
+    return [[r["TIME_PERIOD"], round(float(r["OBS_VALUE"]), 2)] for r in csv.DictReader(io.StringIO(text)) if r["OBS_VALUE"]]
+
+
 def worldbank(country, indicator):
     d = json.loads(get(f"https://api.worldbank.org/v2/country/{country}/indicator/{indicator}?format=json&per_page=100&date=2000:2030"))
     return sorted([x["date"], round(x["value"], 2)] for x in (d[1] or []) if x["value"] is not None)
@@ -237,7 +243,10 @@ def main():
         else:
             s["rate"] = rates.get(c["bis"]) if c["bis"] else (rates.get("XM") if c["bank"] == "ECB" else None)
             s["cpi"] = cpi.get(c["bis"] or cid)
-            s["y10"] = safe(f"{cid} y10", fred, c["y10"]) if c["y10"] else None
+            if c["y10"] == "ECB":
+                s["y10"] = safe(f"{cid} y10", ecb_10y)
+            else:
+                s["y10"] = safe(f"{cid} y10", fred, c["y10"]) if c["y10"] else None
             s["une"] = safe(f"{cid} une", eurostat_unemployment) if c["une"] == "EUROSTAT" else une.get(c["une"])
         s["gdp_y"] = safe(f"{cid} gdp", worldbank, c["wb"], "NY.GDP.MKTP.KD.ZG")
         s["cpi_y"] = safe(f"{cid} cpi_y", worldbank, c["wb"], "FP.CPI.TOTL.ZG")
